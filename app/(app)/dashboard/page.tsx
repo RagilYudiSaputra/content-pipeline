@@ -13,6 +13,11 @@ import {
   Clock,
   Shield,
   Layers,
+  TrendingUp,
+  Calendar,
+  Tag,
+  Share2,
+  Clock3,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -49,7 +54,7 @@ export default function DashboardPage() {
   const [latestContents, setLatestContents] = useState<ContentItem[]>([]);
   const [activities, setActivities] = useState<ActivityLogItem[]>([]);
 
-  // State Hitungan KPI
+  // State Hitungan KPI Terpisah
   const [stats, setStats] = useState({
     total: 0,
     draft: 0,
@@ -88,7 +93,7 @@ export default function DashboardPage() {
 
         setContents(allData);
 
-        // Kalkulasi KPI
+        // Kalkulasi KPI Terpisah
         const total = allData.length;
         const draft = allData.filter((i) => i.status === "Draft").length;
         const revisi = allData.filter((i) => i.status === "Revisi").length;
@@ -97,7 +102,7 @@ export default function DashboardPage() {
 
         setStats({ total, draft, revisi, approval, published });
 
-        // 2. Ambil 3 Konten Terbaru untuk Tabel Latest Content (diperkecil agar tidak scrolling)
+        // 2. Ambil 3 Konten Terbaru untuk Tabel Latest Content
         const latestQuery = query(contentsRef, orderBy("createdDate", "desc"), limit(3));
         const latestSnapshot = await getDocs(latestQuery);
 
@@ -133,19 +138,22 @@ export default function DashboardPage() {
           const ts: Timestamp = data.timestamp;
           const dateObj = ts?.toDate ? ts.toDate() : new Date();
 
-          const timeString = dateObj.toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }) + " WIB";
+          const timeString =
+            dateObj.toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }) + " WIB";
 
           const userName = data.userName || "Administrator";
-          
-          // Tentukan warna titik (dot) berdasarkan role
-          let dotColor = "bg-blue-500";
+
+          let dotColor = "bg-blue-500 shadow-blue-500/50";
           if (userName.toLowerCase().includes("admin")) {
-            dotColor = "bg-blue-600";
-          } else if (userName.toLowerCase().includes("designer") || userName.toLowerCase().includes("desainer")) {
-            dotColor = "bg-purple-600";
+            dotColor = "bg-indigo-500 shadow-indigo-500/50";
+          } else if (
+            userName.toLowerCase().includes("designer") ||
+            userName.toLowerCase().includes("desainer")
+          ) {
+            dotColor = "bg-fuchsia-500 shadow-fuchsia-500/50";
           }
 
           return {
@@ -175,82 +183,135 @@ export default function DashboardPage() {
     return Math.round((value / stats.total) * 100);
   };
 
+  // Helper untuk styling platform berwarna
+  const getPlatformStyle = (platform: string) => {
+    const p = platform.toLowerCase();
+    if (p.includes("instagram")) {
+      return "bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 text-pink-700 border-pink-200/80";
+    } else if (p.includes("tiktok")) {
+      return "bg-slate-900/10 text-slate-900 border-slate-300";
+    } else if (p.includes("youtube")) {
+      return "bg-rose-500/10 text-rose-700 border-rose-200/80";
+    } else if (p.includes("linkedin")) {
+      return "bg-sky-500/10 text-sky-800 border-sky-200/80";
+    } else if (p.includes("twitter") || p.includes("x")) {
+      return "bg-blue-500/10 text-blue-700 border-blue-200/80";
+    }
+    return "bg-indigo-500/10 text-indigo-700 border-indigo-200/80";
+  };
+
+  // Kartu KPI Dipisah Menjadi 5 Kartu Full Gradient
   const statCards = [
     {
       title: "Total Content",
       value: stats.total,
       badge: "Realtime",
       icon: FileText,
-      color: "text-blue-600",
-      bgIcon: "bg-blue-50/85 border-blue-100",
-      glow: "from-blue-500/5 via-transparent to-transparent",
+      gradient: "from-blue-600 via-blue-500 to-indigo-600",
+      textColor: "text-white",
+      titleColor: "text-blue-100",
+      badgeBg: "bg-white/20 text-white border-white/30 backdrop-blur-md",
+      iconBg: "bg-white/20 text-white border-white/20",
+      borderColor: "border-blue-400/30 hover:border-blue-300",
+      shadowColor: "shadow-blue-500/20",
     },
     {
       title: "Draft",
       value: stats.draft,
       badge: `${getPercentage(stats.draft)}%`,
       icon: FileEdit,
-      color: "text-amber-600",
-      bgIcon: "bg-amber-50/85 border-amber-100",
-      glow: "from-amber-500/5 via-transparent to-transparent",
+      gradient: "from-amber-500 via-orange-500 to-amber-600",
+      textColor: "text-white",
+      titleColor: "text-amber-100",
+      badgeBg: "bg-white/20 text-white border-white/30 backdrop-blur-md",
+      iconBg: "bg-white/20 text-white border-white/20",
+      borderColor: "border-amber-400/30 hover:border-amber-300",
+      shadowColor: "shadow-orange-500/20",
     },
     {
-      title: "Revisi / Approval",
-      value: stats.revisi + stats.approval,
-      badge: `${getPercentage(stats.revisi + stats.approval)}%`,
+      title: "Revisi",
+      value: stats.revisi,
+      badge: `${getPercentage(stats.revisi)}%`,
       icon: PenTool,
-      color: "text-violet-600",
-      bgIcon: "bg-violet-50/85 border-violet-100",
-      glow: "from-violet-500/5 via-transparent to-transparent",
+      gradient: "from-violet-600 via-purple-600 to-fuchsia-600",
+      textColor: "text-white",
+      titleColor: "text-violet-100",
+      badgeBg: "bg-white/20 text-white border-white/30 backdrop-blur-md",
+      iconBg: "bg-white/20 text-white border-white/20",
+      borderColor: "border-violet-400/30 hover:border-violet-300",
+      shadowColor: "shadow-purple-500/20",
+    },
+    {
+      title: "Approval",
+      value: stats.approval,
+      badge: `${getPercentage(stats.approval)}%`,
+      icon: Clock3,
+      gradient: "from-sky-500 via-blue-600 to-indigo-600",
+      textColor: "text-white",
+      titleColor: "text-sky-100",
+      badgeBg: "bg-white/20 text-white border-white/30 backdrop-blur-md",
+      iconBg: "bg-white/20 text-white border-white/20",
+      borderColor: "border-sky-400/30 hover:border-sky-300",
+      shadowColor: "shadow-sky-500/20",
     },
     {
       title: "Published",
       value: stats.published,
       badge: `${getPercentage(stats.published)}%`,
       icon: CheckCircle2,
-      color: "text-emerald-600",
-      bgIcon: "bg-emerald-50/85 border-emerald-100",
-      glow: "from-emerald-500/5 via-transparent to-transparent",
+      gradient: "from-emerald-600 via-teal-600 to-emerald-700",
+      textColor: "text-white",
+      titleColor: "text-emerald-100",
+      badgeBg: "bg-white/20 text-white border-white/30 backdrop-blur-md",
+      iconBg: "bg-white/20 text-white border-white/20",
+      borderColor: "border-emerald-400/30 hover:border-emerald-300",
+      shadowColor: "shadow-emerald-500/20",
     },
   ];
 
   if (loading) {
     return (
-      <div className="flex h-[300px] items-center justify-center text-xs text-slate-400 font-medium">
-        <Sparkles className="mr-2 h-4 w-4 animate-spin text-blue-600" />
-        Memuat Dashboard...
+      <div className="flex h-[320px] flex-col items-center justify-center gap-2 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/50 p-6 shadow-sm">
+        <div className="relative flex items-center justify-center">
+          <div className="h-10 w-10 animate-ping rounded-full bg-blue-400/20" />
+          <Sparkles className="absolute h-6 w-6 animate-spin text-blue-600" />
+        </div>
+        <p className="text-xs font-semibold text-slate-500">Memuat Dashboard...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 max-w-full overflow-hidden text-xs pb-2">
+    <div className="space-y-3.5 max-w-full overflow-hidden text-xs pb-2">
       
-      {/* 1. MODERN KPI STATS CARDS (Compact Padding) */}
-      <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
+      {/* 1. FULL GRADIENT KPI STATS CARDS (5 KOLOM) */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {statCards.map((item, index) => {
           const Icon = item.icon;
           return (
             <div
               key={index}
-              className={`relative overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs transition-all bg-gradient-to-b ${item.glow}`}
+              className={`group relative overflow-hidden rounded-2xl border p-3.5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-gradient-to-br ${item.gradient} ${item.borderColor} ${item.shadowColor}`}
             >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold text-slate-500 tracking-wide uppercase">
+              {/* Overlay Glow Effect pada Hover */}
+              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/10 blur-xl transition-all duration-300 group-hover:scale-150" />
+
+              <div className="relative z-10 flex items-center justify-between">
+                <span className={`text-[10px] font-bold tracking-wider uppercase ${item.titleColor}`}>
                   {item.title}
                 </span>
-                <div className={`rounded-lg p-1.5 border ${item.bgIcon} ${item.color} shadow-2xs`}>
+                <div className={`rounded-xl p-1.5 border backdrop-blur-md shadow-sm transition-transform group-hover:scale-110 ${item.iconBg}`}>
                   <Icon className="h-3.5 w-3.5" />
                 </div>
               </div>
 
-              <div className="mt-2 flex items-baseline justify-between">
-                <h2 className="text-xl font-black tracking-tight text-slate-900 font-sans">
+              <div className="relative z-10 mt-2.5 flex items-baseline justify-between">
+                <h2 className={`text-2xl font-black tracking-tight font-sans ${item.textColor}`}>
                   {item.value}
                 </h2>
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border shadow-xs ${item.badgeBg}`}>
+                  <TrendingUp className="mr-1 h-2.5 w-2.5 text-white/90" />
                   {item.badge}
-                  <ArrowUpRight className="ml-0.5 h-2.5 w-2.5 text-slate-400" />
                 </span>
               </div>
             </div>
@@ -258,23 +319,23 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* 2. MIDDLE SECTION: RECENT ACTIVITY & PIPELINE STATUS (Compact Padding) */}
-      <div className="grid gap-2.5 xl:grid-cols-5">
+      {/* 2. MIDDLE SECTION: RECENT ACTIVITY & PIPELINE STATUS */}
+      <div className="grid gap-3 xl:grid-cols-5">
         
         {/* RECENT ACTIVITY TIMELINE */}
-        <div className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs xl:col-span-3 flex flex-col justify-between">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm xl:col-span-3 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-              <div className="flex items-center gap-1.5">
-                <div className="rounded-md bg-blue-50 p-1 text-blue-600 border border-blue-100">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 p-1.5 text-white shadow-xs">
                   <Activity className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <h2 className="text-[11px] font-bold text-slate-900">Aktivitas Terbaru</h2>
+                  <h2 className="text-[12px] font-bold text-slate-900">Aktivitas Terbaru</h2>
                   <p className="text-[9px] text-slate-400">Log riwayat aksi seluruh user sistem</p>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
                 Live Feed
               </span>
@@ -282,34 +343,38 @@ export default function DashboardPage() {
 
             <div className="space-y-2">
               {activities.length === 0 ? (
-                <div className="text-center py-4 text-slate-400 text-[10px]">
+                <div className="text-center py-5 text-slate-400 text-[10px]">
                   <Clock className="mx-auto h-5 w-5 text-slate-300 mb-1" />
                   Belum ada aktivitas tercatat.
                 </div>
               ) : (
                 activities.map((act) => {
-                  const isDesigner = act.userName.toLowerCase().includes("designer") || act.userName.toLowerCase().includes("desainer");
-                  const badgeStyle = isDesigner 
-                    ? "bg-purple-50 text-purple-700 border-purple-200/60" 
-                    : "bg-blue-50 text-blue-700 border-blue-200/60";
+                  const isDesigner =
+                    act.userName.toLowerCase().includes("designer") ||
+                    act.userName.toLowerCase().includes("desainer");
+                  
+                  const badgeStyle = isDesigner
+                    ? "bg-purple-50 text-purple-700 border-purple-200/80"
+                    : "bg-blue-50 text-blue-700 border-blue-200/80";
 
                   return (
                     <div
                       key={act.id}
-                      className="group relative flex items-center justify-between gap-2 rounded-lg p-2 transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100"
+                      className="group relative flex items-center justify-between gap-2 rounded-xl p-2 transition-all hover:bg-slate-50/80 border border-transparent hover:border-slate-200/60"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className={`h-2 w-2 rounded-full shrink-0 ${act.color} shadow-2xs`} />
-                        <span className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded text-[9px] border shrink-0 ${badgeStyle}`}>
+                        <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${act.color} shadow-xs`} />
+                        <span className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-md text-[9px] border shrink-0 ${badgeStyle}`}>
                           <Shield className="h-2.5 w-2.5 opacity-70" />
                           {act.userName}
                         </span>
-                        <span className="text-[10px] text-slate-500 truncate">
-                          {act.action} <strong className="text-slate-800 font-medium">"{act.targetTitle}"</strong>
+                        <span className="text-[10px] text-slate-600 truncate">
+                          {act.action}{" "}
+                          <strong className="text-slate-900 font-semibold">&quot;{act.targetTitle}&quot;</strong>
                         </span>
                       </div>
 
-                      <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 shrink-0">
+                      <span className="text-[9px] font-medium text-slate-400 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 shrink-0">
                         {act.formattedTime}
                       </span>
                     </div>
@@ -321,93 +386,100 @@ export default function DashboardPage() {
         </div>
 
         {/* MODERN PIPELINE STATUS */}
-        <div className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs xl:col-span-2 flex flex-col justify-between">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm xl:col-span-2 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2.5">
-              <div className="flex items-center gap-1.5">
-                <div className="rounded-md bg-violet-50 p-1 text-violet-600 border border-violet-100">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 p-1.5 text-white shadow-xs">
                   <Layers className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <h2 className="text-[11px] font-bold text-slate-900">Status Pipeline</h2>
+                  <h2 className="text-[12px] font-bold text-slate-900">Status Pipeline</h2>
                   <p className="text-[9px] text-slate-400">Distribusi tahap konten</p>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {/* Draft */}
               <div>
                 <div className="mb-1 flex items-center justify-between text-[10px]">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Draft
+                  <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-amber-500 shadow-xs" /> Draft
                   </span>
-                  <span className="text-slate-500 font-mono font-bold">
+                  <span className="text-slate-600 font-mono font-bold">
                     {stats.draft} <span className="font-normal text-slate-400">({getPercentage(stats.draft)}%)</span>
                   </span>
                 </div>
-                <Progress value={getPercentage(stats.draft)} className="h-1 bg-amber-50 [&>div]:bg-amber-500 rounded-full" />
+                <Progress value={getPercentage(stats.draft)} className="h-1.5 bg-amber-100/60 [&>div]:bg-gradient-to-r [&>div]:from-amber-400 [&>div]:to-orange-500 rounded-full" />
               </div>
 
               {/* Revisi */}
               <div>
                 <div className="mb-1 flex items-center justify-between text-[10px]">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-violet-500" /> Revisi
+                  <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-violet-500 shadow-xs" /> Revisi
                   </span>
-                  <span className="text-slate-500 font-mono font-bold">
+                  <span className="text-slate-600 font-mono font-bold">
                     {stats.revisi} <span className="font-normal text-slate-400">({getPercentage(stats.revisi)}%)</span>
                   </span>
                 </div>
-                <Progress value={getPercentage(stats.revisi)} className="h-1 bg-violet-50 [&>div]:bg-violet-500 rounded-full" />
+                <Progress value={getPercentage(stats.revisi)} className="h-1.5 bg-violet-100/60 [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-purple-600 rounded-full" />
               </div>
 
               {/* Approval */}
               <div>
                 <div className="mb-1 flex items-center justify-between text-[10px]">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-sky-500" /> Approval
+                  <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-sky-500 shadow-xs" /> Approval
                   </span>
-                  <span className="text-slate-500 font-mono font-bold">
+                  <span className="text-slate-600 font-mono font-bold">
                     {stats.approval} <span className="font-normal text-slate-400">({getPercentage(stats.approval)}%)</span>
                   </span>
                 </div>
-                <Progress value={getPercentage(stats.approval)} className="h-1 bg-sky-50 [&>div]:bg-sky-500 rounded-full" />
+                <Progress value={getPercentage(stats.approval)} className="h-1.5 bg-sky-100/60 [&>div]:bg-gradient-to-r [&>div]:from-sky-400 [&>div]:to-blue-500 rounded-full" />
               </div>
 
               {/* Published */}
               <div>
                 <div className="mb-1 flex items-center justify-between text-[10px]">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Published
+                  <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-xs" /> Published
                   </span>
-                  <span className="text-slate-500 font-mono font-bold">
+                  <span className="text-slate-600 font-mono font-bold">
                     {stats.published} <span className="font-normal text-slate-400">({getPercentage(stats.published)}%)</span>
                   </span>
                 </div>
-                <Progress value={getPercentage(stats.published)} className="h-1 bg-emerald-50 [&>div]:bg-emerald-500 rounded-full" />
+                <Progress value={getPercentage(stats.published)} className="h-1.5 bg-emerald-100/60 [&>div]:bg-gradient-to-r [&>div]:from-emerald-400 [&>div]:to-teal-500 rounded-full" />
               </div>
             </div>
           </div>
 
-          <div className="mt-2 pt-1.5 border-t border-slate-100 text-center">
-            <span className="text-[9px] text-slate-400">Cloud Firestore Realtime Sync</span>
+          <div className="mt-3 pt-2 border-t border-slate-100 text-center">
+            <span className="text-[9px] font-medium text-slate-400">Cloud Firestore Realtime Sync</span>
           </div>
         </div>
 
       </div>
 
-      {/* 3. LATEST CONTENT TABLE (Compact Padding & limit 3 items) */}
-      <div className="rounded-xl border border-slate-200/80 bg-white shadow-2xs overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 bg-slate-50/50">
-          <div>
-            <h2 className="text-[11px] font-bold text-slate-900">Konten Terbaru</h2>
-            <p className="text-[9px] text-slate-400">Daftar konten yang baru saja dimasukkan ke sistem</p>
+      {/* 3. LATEST CONTENT TABLE */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+        
+        {/* Header Section Tabel */}
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-4 py-3 bg-gradient-to-r from-blue-50/50 via-slate-50/60 to-purple-50/40">
+          <div className="flex items-center gap-2.5">
+            <div className="rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 p-1.5 text-white shadow-xs">
+              <FileText className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="text-[12px] font-bold text-slate-900">Konten Terbaru</h2>
+              <p className="text-[9px] font-medium text-slate-500">Daftar konten yang baru saja dimasukkan ke sistem</p>
+            </div>
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="h-6 px-2.5 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 rounded-lg"
+            className="h-7 px-3 text-[10px] font-bold text-blue-700 bg-white/80 hover:bg-blue-600 hover:text-white border-blue-200 shadow-2xs rounded-xl transition-all"
             onClick={() => (window.location.href = "/content")}
           >
             Lihat Semua
@@ -415,22 +487,24 @@ export default function DashboardPage() {
           </Button>
         </div>
 
+        {/* Body Tabel */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 text-[9px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/30">
-                <th className="px-3 py-2">Judul</th>
-                <th className="px-3 py-2">Platform</th>
-                <th className="px-3 py-2">Jenis</th>
-                <th className="px-3 py-2 text-center">Status</th>
-                <th className="px-3 py-2">Tanggal</th>
-                <th className="px-3 py-2 text-right pr-3">Link</th>
+              <tr className="border-b border-slate-200/80 text-[9px] font-extrabold text-slate-500 uppercase tracking-wider bg-gradient-to-r from-slate-100/80 via-slate-50 to-indigo-50/40">
+                <th className="px-4 py-3">Judul Konten</th>
+                <th className="px-3.5 py-3">Platform</th>
+                <th className="px-3.5 py-3">Jenis</th>
+                <th className="px-3.5 py-3 text-center">Status</th>
+                <th className="px-3.5 py-3">Tanggal</th>
+                <th className="px-3.5 py-3 text-right pr-4">Aksi / Link</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-[10px]">
               {latestContents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-slate-400">
+                  <td colSpan={6} className="py-8 text-center text-slate-400 bg-slate-50/30">
+                    <Sparkles className="mx-auto h-5 w-5 text-slate-300 mb-1" />
                     Belum ada data konten terbaru.
                   </td>
                 </tr>
@@ -438,48 +512,85 @@ export default function DashboardPage() {
                 latestContents.map((item) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-slate-50/60 transition-colors"
+                    className="hover:bg-gradient-to-r hover:from-blue-50/40 hover:via-indigo-50/20 hover:to-transparent transition-all duration-200 group border-l-2 border-l-transparent hover:border-l-blue-500"
                   >
-                    <td className="px-3 py-2 font-semibold text-slate-900 max-w-[200px] truncate">
-                      {item.title}
+                    {/* Judul Konten */}
+                    <td className="px-4 py-3 font-bold text-slate-800 group-hover:text-blue-700 transition-colors max-w-[220px]">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                        <span className="truncate" title={item.title}>
+                          {item.title}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-3 py-2 text-slate-600 font-medium">
-                      {item.platform}
+
+                    {/* Platform */}
+                    <td className="px-3.5 py-3">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold text-[9px] border shadow-2xs ${getPlatformStyle(item.platform)}`}>
+                        <Share2 className="h-2.5 w-2.5 opacity-70" />
+                        {item.platform}
+                      </span>
                     </td>
-                    <td className="px-3 py-2 text-slate-500">
-                      {item.contentType}
+
+                    {/* Jenis Konten */}
+                    <td className="px-3.5 py-3">
+                      <span className="inline-flex items-center gap-1.5 text-slate-600 font-semibold bg-slate-100/70 px-2 py-0.5 rounded-md border border-slate-200/50">
+                        <Tag className="h-2.5 w-2.5 text-slate-400" />
+                        {item.contentType}
+                      </span>
                     </td>
-                    <td className="px-3 py-2 text-center">
+
+                    {/* Status Konten */}
+                    <td className="px-3.5 py-3 text-center">
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold shadow-2xs ${
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-bold shadow-2xs transition-transform group-hover:scale-105 ${
                           item.status === "Published"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-300/80 shadow-emerald-500/10"
                             : item.status === "Draft"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                            ? "bg-amber-50 text-amber-700 border border-amber-300/80 shadow-amber-500/10"
                             : item.status === "Approval"
-                            ? "bg-sky-50 text-sky-700 border border-sky-200/60"
-                            : "bg-violet-50 text-violet-700 border border-violet-200/60"
+                            ? "bg-sky-50 text-sky-700 border border-sky-300/80 shadow-sky-500/10"
+                            : "bg-violet-50 text-violet-700 border border-violet-300/80 shadow-violet-500/10"
                         }`}
                       >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full animate-pulse ${
+                            item.status === "Published"
+                              ? "bg-emerald-500"
+                              : item.status === "Draft"
+                              ? "bg-amber-500"
+                              : item.status === "Approval"
+                              ? "bg-sky-500"
+                              : "bg-violet-500"
+                          }`}
+                        />
                         {item.status}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-slate-500 whitespace-nowrap font-medium">
-                      {item.createdDate}
+
+                    {/* Tanggal dibuat */}
+                    <td className="px-3.5 py-3 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 text-slate-500 font-medium bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/60 text-[9px]">
+                        <Calendar className="h-2.5 w-2.5 text-slate-400" />
+                        {item.createdDate}
+                      </span>
                     </td>
-                    <td className="px-3 py-2 text-right pr-3">
+
+                    {/* Link Akses File */}
+                    <td className="px-3.5 py-3 text-right pr-4">
                       {item.fileUrl ? (
                         <a
                           href={item.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          className="inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-blue-600 bg-blue-50/80 hover:bg-blue-600 hover:text-white rounded-lg border border-blue-200/80 transition-all shadow-2xs group/link"
                           title="Buka File"
                         >
-                          <ExternalLink className="h-3 w-3" />
+                          <span>Buka</span>
+                          <ExternalLink className="h-2.5 w-2.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
                         </a>
                       ) : (
-                        <span className="text-slate-300">-</span>
+                        <span className="text-slate-300 text-[10px] font-mono">-</span>
                       )}
                     </td>
                   </tr>
@@ -487,6 +598,12 @@ export default function DashboardPage() {
               )}
             </tbody>
           </table>
+        </div>
+        
+        {/* Footer Kecil Tabel */}
+        <div className="bg-slate-50/50 border-t border-slate-100 px-4 py-2 text-[9px] text-slate-400 flex items-center justify-between">
+          <span>Menampilkan 3 konten terbaru</span>
+          <span className="font-mono text-[8px] text-slate-300">Live Updated</span>
         </div>
       </div>
 

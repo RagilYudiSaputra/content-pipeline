@@ -18,6 +18,13 @@ import {
   MessageSquare,
   Hash,
   FileCheck2,
+  Share2,
+  Tag,
+  Calendar,
+  Sparkles,
+  Filter,
+  Layers,
+  FileText,
 } from "lucide-react";
 
 import {
@@ -66,7 +73,7 @@ async function logActivity(
       targetTitle: targetTitle || "Konten",
       timestamp: serverTimestamp(),
       color,
-      isRead: false, // Menandai notifikasi baru belum dibaca
+      isRead: false,
     });
   } catch (error) {
     console.error("Gagal mencatat log aktivitas:", error);
@@ -129,6 +136,23 @@ function getStatusPriority(status: string): number {
       return 5;
   }
 }
+
+// Helper Styling Platform Berwarna (Sesuai Dashboard)
+const getPlatformStyle = (platform: string) => {
+  const p = platform.toLowerCase();
+  if (p.includes("instagram")) {
+    return "bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 text-pink-700 border-pink-200/80";
+  } else if (p.includes("tiktok")) {
+    return "bg-slate-900/10 text-slate-900 border-slate-300";
+  } else if (p.includes("youtube")) {
+    return "bg-rose-500/10 text-rose-700 border-rose-200/80";
+  } else if (p.includes("linkedin")) {
+    return "bg-sky-500/10 text-sky-800 border-sky-200/80";
+  } else if (p.includes("twitter") || p.includes("x")) {
+    return "bg-blue-500/10 text-blue-700 border-blue-200/80";
+  }
+  return "bg-indigo-500/10 text-indigo-700 border-indigo-200/80";
+};
 
 // ----------------------------------------------------------------------
 // MAIN COMPONENT
@@ -221,9 +245,9 @@ export default function ContentPage() {
           contentType: item.contentType ?? "",
           audience: item.audience ?? "",
           status: item.status ?? "Draft",
-          createdDate: cDateObj ? cDateObj.toLocaleDateString("id-ID") : "-",
+          createdDate: cDateObj ? cDateObj.toLocaleDateString("id-ID", { day: "numeric", month: "short" }) : "-",
           rawCreatedDate: rawCDate,
-          publishDate: pDateObj ? pDateObj.toLocaleDateString("id-ID") : "-",
+          publishDate: pDateObj ? pDateObj.toLocaleDateString("id-ID", { day: "numeric", month: "short" }) : "-",
           rawPublishDate: rawPDate,
           fileUrl: item.fileUrl ?? "",
           caption: item.caption ?? "",
@@ -232,9 +256,6 @@ export default function ContentPage() {
         };
       });
 
-      // Pengurutan Kustom:
-      // 1. Berdasarkan prioritas status (Draft -> Revisi -> Approval -> Published)
-      // 2. Berdasarkan tanggal dibuat paling muda (ascending / terlama ke terbaru atau sebaliknya, sesuai instruksi "paling muda" / tanggal terkecil duluan)
       data.sort((a, b) => {
         const priorityA = getStatusPriority(a.status);
         const priorityB = getStatusPriority(b.status);
@@ -279,8 +300,9 @@ export default function ContentPage() {
       const matchesStatus =
         filterStatus === "Semua Status" || item.status === filterStatus;
 
+      // DISESUAIKAN: Menggunakan rawPublishDate untuk pencocokan tanggal posting
       const matchesDate =
-        filterDate === "" || item.rawCreatedDate === filterDate;
+        filterDate === "" || item.rawPublishDate === filterDate;
 
       return (
         matchesSearch &&
@@ -401,7 +423,6 @@ export default function ContentPage() {
       }
 
       if (editingId) {
-        // EDIT KONTEN
         const oldItem = contentData.find((item) => item.id === editingId);
 
         const docRef = doc(db, "contents", editingId);
@@ -412,15 +433,14 @@ export default function ContentPage() {
           actionText = getChangedFieldsText(oldItem, formData);
         }
 
-        let color = "bg-blue-500";
-        if (formData.status === "Published") color = "bg-emerald-500";
-        else if (formData.status === "Approval") color = "bg-sky-500";
-        else if (formData.status === "Revisi") color = "bg-violet-500";
-        else if (formData.status === "Draft") color = "bg-amber-500";
+        let color = "bg-blue-500 shadow-blue-500/50";
+        if (formData.status === "Published") color = "bg-emerald-500 shadow-emerald-500/50";
+        else if (formData.status === "Approval") color = "bg-sky-500 shadow-sky-500/50";
+        else if (formData.status === "Revisi") color = "bg-violet-500 shadow-violet-500/50";
+        else if (formData.status === "Draft") color = "bg-amber-500 shadow-amber-500/50";
 
         await logActivity(currentUserRole, actionText, `"${formData.title}"`, color);
       } else {
-        // TAMBAH KONTEN BARU
         if (isDesigner) payload.revision = "-";
 
         await addDoc(collection(db, "contents"), payload);
@@ -429,7 +449,7 @@ export default function ContentPage() {
           currentUserRole,
           "menambahkan konten baru",
           `"${formData.title}"`,
-          "bg-emerald-500"
+          "bg-emerald-500 shadow-emerald-500/50"
         );
       }
 
@@ -452,7 +472,7 @@ export default function ContentPage() {
         currentUserRole,
         "menghapus konten",
         `"${deleteModal.title}"`,
-        "bg-red-500"
+        "bg-red-500 shadow-red-500/50"
       );
 
       setDeleteModal({ open: false, id: null, title: "" });
@@ -472,42 +492,54 @@ export default function ContentPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[350px] items-center justify-center text-xs text-slate-400">
-        Memuat data...
+      <div className="flex h-[320px] flex-col items-center justify-center gap-2 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/50 p-6 shadow-sm">
+        <div className="relative flex items-center justify-center">
+          <div className="h-10 w-10 animate-ping rounded-full bg-blue-400/20" />
+          <Sparkles className="absolute h-6 w-6 animate-spin text-blue-600" />
+        </div>
+        <p className="text-xs font-semibold text-slate-500">Memuat Data Konten...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 max-w-full overflow-hidden text-xs">
-      {/* Header Search & CTA */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="relative w-full max-w-xs">
+    <div className="space-y-3.5 max-w-full overflow-hidden text-xs pb-2">
+      
+      {/* 1. HEADER CONTROL BAR (SEARCH & CREATION) */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
           <Search
             size={14}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
           />
           <Input
             placeholder="Cari judul, caption, hashtag..."
-            className="h-8 pl-8 text-xs"
+            className="h-8 pl-8 text-xs rounded-xl border-slate-200/80 bg-slate-50/50 focus:bg-white transition-all"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <Button className="h-8 px-3 text-xs" onClick={handleOpenAddModal}>
+        <Button 
+          className="w-full sm:w-auto h-8 px-3.5 text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-md shadow-blue-500/20 transition-all duration-200"
+          onClick={handleOpenAddModal}
+        >
           <Plus className="mr-1.5 h-3.5 w-3.5" />
           Buat Konten Baru
         </Button>
       </div>
 
-      {/* Filter Row Compact */}
-      <div className="rounded-lg border border-slate-200 bg-white p-2.5 shadow-2xs">
+      {/* 2. FILTER ROW MODERN */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
+        <div className="flex items-center gap-1.5 mb-2.5 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+          <Filter className="h-3 w-3 text-blue-600" />
+          <span>Filter Konten</span>
+        </div>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
           <select
             value={filterPlatform}
             onChange={(e) => setFilterPlatform(e.target.value)}
-            className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-8 rounded-xl border border-slate-200/80 bg-slate-50/50 px-2.5 text-[11px] font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
           >
             <option>Semua Platform</option>
             <option>Instagram</option>
@@ -517,7 +549,7 @@ export default function ContentPage() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-8 rounded-xl border border-slate-200/80 bg-slate-50/50 px-2.5 text-[11px] font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
           >
             <option>Semua Jenis</option>
             <option>Carousel</option>
@@ -528,7 +560,7 @@ export default function ContentPage() {
           <select
             value={filterAudience}
             onChange={(e) => setFilterAudience(e.target.value)}
-            className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-8 rounded-xl border border-slate-200/80 bg-slate-50/50 px-2.5 text-[11px] font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
           >
             <option>Semua Audience</option>
             <option>Mahasiswa</option>
@@ -541,7 +573,7 @@ export default function ContentPage() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-8 rounded-xl border border-slate-200/80 bg-slate-50/50 px-2.5 text-[11px] font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
           >
             <option>Semua Status</option>
             <option>Draft</option>
@@ -554,12 +586,12 @@ export default function ContentPage() {
             type="date"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="h-7 text-[11px] px-2"
+            className="h-8 text-[11px] px-2.5 rounded-xl border-slate-200/80 bg-slate-50/50 font-medium"
           />
 
           <Button
             variant="outline"
-            className="h-7 text-[11px] px-2"
+            className="h-8 text-[11px] font-bold px-2.5 rounded-xl border-slate-200 hover:bg-slate-100 text-slate-600 transition-all"
             onClick={handleResetFilter}
           >
             <RotateCcw className="mr-1 h-3 w-3" />
@@ -568,215 +600,278 @@ export default function ContentPage() {
         </div>
       </div>
 
-      {/* Table Konten */}
-      <div className="rounded-lg border border-slate-200 bg-white shadow-2xs overflow-hidden">
-        <table className="w-full text-left table-fixed">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-semibold text-slate-500">
-              <th className="w-[18%] px-3 py-2">Judul Konten</th>
-              <th className="w-[9%] px-2 py-2">Platform</th>
-              <th className="w-[9%] px-2 py-2">Jenis</th>
-              <th className="w-[9%] px-2 py-2">Audience</th>
-              <th className="w-[9%] px-2 py-2 text-center">Status</th>
+      {/* 3. TABLE KONTEN MODERN (GAYA DASHBOARD) */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+        
+        {/* Header Section Tabel */}
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-4 py-3 bg-gradient-to-r from-blue-50/50 via-slate-50/60 to-purple-50/40">
+          <div className="flex items-center gap-2.5">
+            <div className="rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 p-1.5 text-white shadow-xs">
+              <Layers className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="text-[12px] font-bold text-slate-900">Daftar Kelola Konten</h2>
+              <p className="text-[9px] font-medium text-slate-500">Manajemen status, media, dan rincian konten</p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 shadow-2xs">
+            Total: {filteredContents.length} Konten
+          </span>
+        </div>
 
-              <th className="w-[9%] px-1.5 py-2">Tgl Dibuat</th>
-              <th className="w-[9%] px-1.5 py-2">Tgl Posting</th>
-
-              <th className="w-[6%] px-1 py-2 text-center">Link</th>
-              <th className="w-[6%] px-1 py-2 text-center">Caption</th>
-              <th className="w-[6%] px-1 py-2 text-center">Hashtag</th>
-              <th className="w-[6%] px-1 py-2 text-center">Revisi</th>
-
-              <th className="w-[6%] px-2 py-2 text-right pr-3">Aksi</th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-slate-100 text-[11px]">
-            {paginatedContents.length === 0 ? (
-              <tr>
-                <td colSpan={12} className="py-6 text-center text-slate-400">
-                  {contentData.length === 0
-                    ? "Belum ada data konten."
-                    : "Data tidak ditemukan."}
-                </td>
+        {/* Body Tabel */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200/80 text-[9px] font-extrabold text-slate-500 uppercase tracking-wider bg-gradient-to-r from-slate-100/80 via-slate-50 to-indigo-50/40">
+                <th className="px-4 py-3">Judul Konten</th>
+                <th className="px-3.5 py-3">Platform</th>
+                <th className="px-3.5 py-3">Jenis</th>
+                <th className="px-3.5 py-3">Audience</th>
+                <th className="px-3.5 py-3 text-center">Status</th>
+                <th className="px-3.5 py-3">Dibuat</th>
+                <th className="px-3.5 py-3">Posting</th>
+                <th className="px-2 py-3 text-center">Link</th>
+                <th className="px-2 py-3 text-center">Detail</th>
+                <th className="px-3.5 py-3 text-right pr-4">Aksi</th>
               </tr>
-            ) : (
-              paginatedContents.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-slate-50/60 transition-colors"
-                >
-                  <td className="px-3 py-1.5 font-medium text-slate-800 truncate" title={item.title}>
-                    {item.title}
-                  </td>
-                  <td className="px-2 py-1.5 text-slate-600 truncate">{item.platform}</td>
-                  <td className="px-2 py-1.5 text-slate-500 truncate">{item.contentType}</td>
-                  <td className="px-2 py-1.5 text-slate-500 truncate">{item.audience}</td>
+            </thead>
 
-                  {/* Status Badge */}
-                  <td className="px-2 py-1.5 text-center">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-[9px] font-medium ${
-                        item.status === "Published"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                          : item.status === "Draft"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-                          : item.status === "Approval"
-                          ? "bg-blue-50 text-blue-700 border border-blue-200/60"
-                          : "bg-violet-50 text-violet-700 border border-violet-200/60"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-
-                  <td className="px-1.5 py-1.5 text-slate-500 whitespace-nowrap text-[10px]">
-                    {item.createdDate}
-                  </td>
-
-                  <td className="px-1.5 py-1.5 text-slate-500 whitespace-nowrap text-[10px]">
-                    {item.publishDate}
-                  </td>
-
-                  {/* Link File */}
-                  <td className="px-1 py-1.5 text-center">
-                    {item.fileUrl ? (
-                      <a
-                        href={item.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center p-1 text-blue-600 hover:bg-blue-50 rounded"
-                        title="Buka Link File"
-                      >
-                        <ExternalLink size={13} />
-                      </a>
-                    ) : (
-                      <span className="text-slate-300">-</span>
-                    )}
-                  </td>
-
-                  {/* Caption */}
-                  <td className="px-1 py-1.5 text-center">
-                    <button
-                      onClick={() => handleOpenDetail(`Caption - ${item.title}`, item.caption)}
-                      className="inline-flex items-center justify-center p-1 text-slate-600 hover:bg-slate-100 rounded"
-                      title="Lihat Caption"
-                    >
-                      <MessageSquare size={13} />
-                    </button>
-                  </td>
-
-                  {/* Hashtag */}
-                  <td className="px-1 py-1.5 text-center">
-                    <button
-                      onClick={() => handleOpenDetail(`Hashtag - ${item.title}`, item.hashtag)}
-                      className="inline-flex items-center justify-center p-1 text-slate-600 hover:bg-slate-100 rounded"
-                      title="Lihat Hashtag"
-                    >
-                      <Hash size={13} />
-                    </button>
-                  </td>
-
-                  {/* Revisi */}
-                  <td className="px-1 py-1.5 text-center">
-                    <button
-                      onClick={() => handleOpenDetail(`Catatan Revisi - ${item.title}`, item.revision)}
-                      className="inline-flex items-center justify-center p-1 text-slate-600 hover:bg-slate-100 rounded"
-                      title="Lihat Catatan Revisi"
-                    >
-                      <FileCheck2 size={13} />
-                    </button>
-                  </td>
-
-                  {/* Aksi */}
-                  <td className="px-2 py-1.5 text-right pr-3">
-                    <div className="flex justify-end gap-1">
-                      <button
-                        onClick={() => handleOpenEditModal(item)}
-                        className="p-1 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded"
-                        title="Edit Konten"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          setDeleteModal({
-                            open: true,
-                            id: item.id,
-                            title: item.title,
-                          })
-                        }
-                        className="p-1 text-slate-500 hover:text-red-600 hover:bg-slate-100 rounded"
-                        title="Hapus Konten"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+            <tbody className="divide-y divide-slate-100 text-[10px]">
+              {paginatedContents.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="py-8 text-center text-slate-400 bg-slate-50/30">
+                    <Sparkles className="mx-auto h-5 w-5 text-slate-300 mb-1" />
+                    {contentData.length === 0
+                      ? "Belum ada data konten tersimpan."
+                      : "Data tidak ditemukan berdasarkan filter."}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                paginatedContents.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gradient-to-r hover:from-blue-50/40 hover:via-indigo-50/20 hover:to-transparent transition-all duration-200 group border-l-2 border-l-transparent hover:border-l-blue-500"
+                  >
+                    {/* Judul Konten */}
+                    <td className="px-4 py-3 font-bold text-slate-800 group-hover:text-blue-700 transition-colors max-w-[200px]">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                        <span className="truncate" title={item.title}>
+                          {item.title}
+                        </span>
+                      </div>
+                    </td>
 
-      {/* Pagination Footer */}
-      <div className="flex items-center justify-between border-t border-slate-100 pt-2 px-1 text-[11px] text-slate-500">
-        <p>
-          Data {filteredContents.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1} -{" "}
-          {Math.min(currentPage * ITEMS_PER_PAGE, filteredContents.length)} dari {filteredContents.length}
-        </p>
+                    {/* Platform */}
+                    <td className="px-3.5 py-3 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold text-[9px] border shadow-2xs ${getPlatformStyle(item.platform)}`}>
+                        <Share2 className="h-2.5 w-2.5 opacity-70" />
+                        {item.platform}
+                      </span>
+                    </td>
 
-        <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px]"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => prev - 1)}
-          >
-            <ChevronLeft className="mr-0.5 h-3 w-3" /> Prev
-          </Button>
-          <span className="text-[10px]">
-            {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px]"
-            disabled={currentPage >= totalPages}
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-          >
-            Next <ChevronRight className="ml-0.5 h-3 w-3" />
-          </Button>
+                    {/* Jenis Konten */}
+                    <td className="px-3.5 py-3 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 text-slate-600 font-semibold bg-slate-100/70 px-2 py-0.5 rounded-md border border-slate-200/50">
+                        <Tag className="h-2.5 w-2.5 text-slate-400" />
+                        {item.contentType}
+                      </span>
+                    </td>
+
+                    {/* Audience */}
+                    <td className="px-3.5 py-3 text-slate-600 font-medium whitespace-nowrap">
+                      {item.audience}
+                    </td>
+
+                    {/* Status Badge */}
+                    <td className="px-3.5 py-3 text-center whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-bold shadow-2xs transition-transform group-hover:scale-105 ${
+                          item.status === "Published"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-300/80 shadow-emerald-500/10"
+                            : item.status === "Draft"
+                            ? "bg-amber-50 text-amber-700 border border-amber-300/80 shadow-amber-500/10"
+                            : item.status === "Approval"
+                            ? "bg-sky-50 text-sky-700 border border-sky-300/80 shadow-sky-500/10"
+                            : "bg-violet-50 text-violet-700 border border-violet-300/80 shadow-violet-500/10"
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full animate-pulse ${
+                            item.status === "Published"
+                              ? "bg-emerald-500"
+                              : item.status === "Draft"
+                              ? "bg-amber-500"
+                              : item.status === "Approval"
+                              ? "bg-sky-500"
+                              : "bg-violet-500"
+                          }`}
+                        />
+                        {item.status}
+                      </span>
+                    </td>
+
+                    {/* Tanggal Dibuat */}
+                    <td className="px-3.5 py-3 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 text-slate-500 font-medium bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/60 text-[9px]">
+                        <Calendar className="h-2.5 w-2.5 text-slate-400" />
+                        {item.createdDate}
+                      </span>
+                    </td>
+
+                    {/* Tanggal Posting */}
+                    <td className="px-3.5 py-3 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 text-slate-500 font-medium bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/60 text-[9px]">
+                        <Calendar className="h-2.5 w-2.5 text-slate-400" />
+                        {item.publishDate}
+                      </span>
+                    </td>
+
+                    {/* Link File */}
+                    <td className="px-2 py-3 text-center whitespace-nowrap">
+                      {item.fileUrl ? (
+                        <a
+                          href={item.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-blue-600 bg-blue-50/80 hover:bg-blue-600 hover:text-white rounded-lg border border-blue-200/80 transition-all shadow-2xs group/link"
+                          title="Buka Link File"
+                        >
+                          <ExternalLink className="h-3 w-3 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                        </a>
+                      ) : (
+                        <span className="text-slate-300 font-mono">-</span>
+                      )}
+                    </td>
+
+                    {/* Akses Detail (Caption, Hashtag, Revisi dalam 1 Grup) */}
+                    <td className="px-2 py-3 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={() => handleOpenDetail(`Caption - ${item.title}`, item.caption)}
+                          className="p-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Lihat Caption"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDetail(`Hashtag - ${item.title}`, item.hashtag)}
+                          className="p-1 text-slate-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          title="Lihat Hashtag"
+                        >
+                          <Hash className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDetail(`Catatan Revisi - ${item.title}`, item.revision)}
+                          className="p-1 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          title="Lihat Catatan Revisi"
+                        >
+                          <FileCheck2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* Aksi */}
+                    <td className="px-3.5 py-3 text-right pr-4 whitespace-nowrap">
+                      <div className="flex justify-end gap-1">
+                        <button
+                          onClick={() => handleOpenEditModal(item)}
+                          className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg border border-transparent hover:border-blue-200 transition-all"
+                          title="Edit Konten"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            setDeleteModal({
+                              open: true,
+                              id: item.id,
+                              title: item.title,
+                            })
+                          }
+                          className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition-all"
+                          title="Hapus Konten"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer Pagination Modern */}
+        <div className="bg-slate-50/60 border-t border-slate-100 px-4 py-2.5 text-[10px] text-slate-500 flex items-center justify-between">
+          <p className="font-medium">
+            Menampilkan data{" "}
+            <strong className="text-slate-800">
+              {filteredContents.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1}
+            </strong>{" "}
+            -{" "}
+            <strong className="text-slate-800">
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredContents.length)}
+            </strong>{" "}
+            dari <strong className="text-slate-800">{filteredContents.length}</strong>
+          </p>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2.5 text-[10px] font-bold rounded-xl border-slate-200"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => prev - 1)}
+            >
+              <ChevronLeft className="mr-1 h-3 w-3" /> Prev
+            </Button>
+            <span className="font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
+              {currentPage} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2.5 text-[10px] font-bold rounded-xl border-slate-200"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+            >
+              Next <ChevronRight className="ml-1 h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* MODAL DETAIL */}
       {viewDetailModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-2xs">
-          <div className="w-full max-w-sm rounded-xl bg-white shadow-lg border border-slate-200">
-            <div className="flex items-center justify-between border-b px-4 py-3">
-              <h3 className="text-xs font-semibold text-slate-800 truncate">
-                {viewDetailModal.title}
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 bg-gradient-to-r from-slate-50 to-blue-50/30">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-blue-600" />
+                <h3 className="text-xs font-bold text-slate-800 truncate">
+                  {viewDetailModal.title}
+                </h3>
+              </div>
               <button
                 onClick={() => setViewDetailModal({ open: false, title: "", content: "" })}
-                className="text-slate-400 hover:text-slate-600"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
               >
                 <X size={14} />
               </button>
             </div>
-            <div className="p-4 max-h-56 overflow-y-auto">
-              <p className="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed bg-slate-50 p-2.5 rounded-md border border-slate-100">
+            <div className="p-4 max-h-60 overflow-y-auto">
+              <p className="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed bg-slate-50/80 p-3 rounded-xl border border-slate-200/60 font-mono text-[11px]">
                 {viewDetailModal.content}
               </p>
             </div>
-            <div className="flex justify-end border-t px-4 py-2 bg-slate-50/50 rounded-b-xl">
+            <div className="flex justify-end border-t border-slate-100 px-4 py-2.5 bg-slate-50/50">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs"
+                className="h-7 text-xs font-bold rounded-xl border-slate-200"
                 onClick={() => setViewDetailModal({ open: false, title: "", content: "" })}
               >
                 Tutup
@@ -788,25 +883,29 @@ export default function ContentPage() {
 
       {/* MODAL DELETE CONFIRMATION */}
       {deleteModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-2xs">
-          <div className="w-full max-w-sm rounded-xl bg-white p-4 shadow-xl border border-slate-200 space-y-3">
-            <h3 className="text-xs font-bold text-slate-800">Hapus Konten</h3>
-            <p className="text-xs text-slate-600">
-              Apakah Anda yakin ingin menghapus konten &quot;{deleteModal.title}&quot;? Action ini tidak dapat dibatalkan.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-2xl border border-slate-200 space-y-3 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-2 text-rose-600">
+              <div className="rounded-lg bg-rose-50 p-2">
+                <Trash2 className="h-4 w-4" />
+              </div>
+              <h3 className="text-xs font-bold text-slate-900">Hapus Konten</h3>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Apakah Anda yakin ingin menghapus konten &quot;<strong className="text-slate-800">{deleteModal.title}</strong>&quot;? Tindakan ini tidak dapat dibatalkan.
             </p>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs"
+                className="h-7 text-xs font-bold rounded-xl border-slate-200"
                 onClick={() => setDeleteModal({ open: false, id: null, title: "" })}
               >
                 Batal
               </Button>
               <Button
-                variant="destructive"
                 size="sm"
-                className="h-7 text-xs"
+                className="h-7 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-xs"
                 onClick={handleDelete}
               >
                 Hapus
@@ -818,46 +917,55 @@ export default function ContentPage() {
 
       {/* MODAL TAMBAH / EDIT KONTEN */}
       {openModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-2xs">
-          <div className="w-full max-w-md rounded-xl bg-white shadow-xl border border-slate-200 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between border-b px-4 py-3">
-              <h2 className="text-xs font-bold text-slate-800">
-                {editingId ? "Edit Konten" : "Tambah Konten Baru"}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 bg-gradient-to-r from-blue-50/50 via-slate-50 to-indigo-50/30">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-blue-600 p-1.5 text-white shadow-2xs">
+                  <Plus className="h-3.5 w-3.5" />
+                </div>
+                <h2 className="text-xs font-bold text-slate-800">
+                  {editingId ? "Edit Konten" : "Tambah Konten Baru"}
+                </h2>
+              </div>
               <button
                 onClick={() => setOpenModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
               >
                 <X size={16} />
               </button>
             </div>
 
+            {/* Modal Body */}
             <div className="p-4 space-y-3 overflow-y-auto">
+              
               {/* Judul Konten */}
               <div>
-                <label className="mb-1 block text-[11px] font-medium text-slate-700">
-                  Judul Konten <span className="text-red-500">*</span>
+                <label className="mb-1 block text-[11px] font-bold text-slate-700">
+                  Judul Konten <span className="text-rose-500">*</span>
                 </label>
                 <Input
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  placeholder="Masukkan judul..."
-                  className="h-8 text-xs"
+                  placeholder="Masukkan judul konten..."
+                  className="h-8 text-xs rounded-xl border-slate-200 focus:ring-blue-500"
                 />
               </div>
 
               {/* Platform & Jenis Konten */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                  <label className="mb-1 block text-[11px] font-bold text-slate-700">
                     Platform
                   </label>
                   <select
                     name="platform"
                     value={formData.platform}
                     onChange={handleInputChange}
-                    className="h-8 w-full rounded-md border border-input bg-background px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="h-8 w-full rounded-xl border border-slate-200 bg-background px-2.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="Instagram">Instagram</option>
                     <option value="TikTok">TikTok</option>
@@ -865,14 +973,14 @@ export default function ContentPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                  <label className="mb-1 block text-[11px] font-bold text-slate-700">
                     Jenis Konten
                   </label>
                   <select
                     name="contentType"
                     value={formData.contentType}
                     onChange={handleInputChange}
-                    className="h-8 w-full rounded-md border border-input bg-background px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="h-8 w-full rounded-xl border border-slate-200 bg-background px-2.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="Carousel">Carousel</option>
                     <option value="Video">Video</option>
@@ -884,14 +992,14 @@ export default function ContentPage() {
               {/* Target Audience & Status */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                  <label className="mb-1 block text-[11px] font-bold text-slate-700">
                     Target Audience
                   </label>
                   <select
                     name="audience"
                     value={formData.audience}
                     onChange={handleInputChange}
-                    className="h-8 w-full rounded-md border border-input bg-background px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="h-8 w-full rounded-xl border border-slate-200 bg-background px-2.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="Mahasiswa">Mahasiswa</option>
                     <option value="Dosen">Dosen</option>
@@ -902,27 +1010,27 @@ export default function ContentPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                  <label className="mb-1 block text-[11px] font-bold text-slate-700">
                     Status
                   </label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    className="h-8 w-full rounded-md border border-input bg-background px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
-                  >
-                    <option value="Draft">Draft</option>
-                    <option value="Revisi">Revisi</option>
-                    <option value="Approval">Approval</option>
-                    <option value="Published">Published</option>
-                  </select>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className="h-8 w-full rounded-xl border border-slate-200 bg-background px-2.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="Draft">Draft</option>
+                  <option value="Revisi">Revisi</option>
+                  <option value="Approval">Approval</option>
+                  <option value="Published">Published</option>
+                </select>
                 </div>
               </div>
 
               {/* Tanggal Dibuat & Tanggal Posting */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                  <label className="mb-1 block text-[11px] font-bold text-slate-700">
                     Tanggal Dibuat
                   </label>
                   <Input
@@ -930,12 +1038,12 @@ export default function ContentPage() {
                     name="createdDate"
                     value={formData.createdDate}
                     onChange={handleInputChange}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-xl border-slate-200"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                  <label className="mb-1 block text-[11px] font-bold text-slate-700">
                     Tanggal Posting
                   </label>
                   <Input
@@ -943,14 +1051,14 @@ export default function ContentPage() {
                     name="publishDate"
                     value={formData.publishDate}
                     onChange={handleInputChange}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-xl border-slate-200"
                   />
                 </div>
               </div>
 
               {/* Link File Konten */}
               <div>
-                <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                <label className="mb-1 block text-[11px] font-bold text-slate-700">
                   Link File Konten
                 </label>
                 <Input
@@ -958,13 +1066,13 @@ export default function ContentPage() {
                   value={formData.fileUrl}
                   onChange={handleInputChange}
                   placeholder="https://drive.google.com/..."
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-xl border-slate-200"
                 />
               </div>
 
               {/* Caption */}
               <div>
-                <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                <label className="mb-1 block text-[11px] font-bold text-slate-700">
                   Caption
                 </label>
                 <textarea
@@ -973,13 +1081,13 @@ export default function ContentPage() {
                   onChange={handleInputChange}
                   rows={2}
                   placeholder="Tulis caption..."
-                  className="w-full rounded-md border border-input p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
                 />
               </div>
 
               {/* Hashtag */}
               <div>
-                <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                <label className="mb-1 block text-[11px] font-bold text-slate-700">
                   Hashtag
                 </label>
                 <textarea
@@ -988,14 +1096,14 @@ export default function ContentPage() {
                   onChange={handleInputChange}
                   rows={2}
                   placeholder="#hashtag..."
-                  className="w-full rounded-md border border-input p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
                 />
               </div>
 
               {/* Catatan Revisi */}
               {!isDesigner && (
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-700">
+                  <label className="mb-1 block text-[11px] font-bold text-slate-700">
                     Catatan Revisi
                   </label>
                   <textarea
@@ -1004,22 +1112,27 @@ export default function ContentPage() {
                     onChange={handleInputChange}
                     rows={2}
                     placeholder="Catatan revisi..."
-                    className="w-full rounded-md border border-input p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
                   />
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 border-t px-4 py-3 bg-slate-50/50 rounded-b-xl">
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-4 py-3 bg-slate-50/50">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs"
+                className="h-8 text-xs font-bold rounded-xl border-slate-200"
                 onClick={() => setOpenModal(false)}
               >
                 Batal
               </Button>
-              <Button size="sm" className="h-7 text-xs" onClick={handleSave}>
+              <Button 
+                size="sm" 
+                className="h-8 px-4 text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-md shadow-blue-500/20" 
+                onClick={handleSave}
+              >
                 Simpan
               </Button>
             </div>
