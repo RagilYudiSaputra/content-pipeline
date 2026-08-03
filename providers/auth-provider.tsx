@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { getUserProfile } from "@/services/user.service";
@@ -10,12 +17,14 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  setProfile: Dispatch<SetStateAction<UserProfile | null>>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
+  setProfile: () => {},
 });
 
 export function AuthProvider({
@@ -32,11 +41,7 @@ export function AuthProvider({
       console.log("AUTH STATE CHANGED:", currentUser?.uid);
 
       if (currentUser) {
-        // User langsung disimpan
         setUser(currentUser);
-
-        // Loading selesai lebih dulu
-        setLoading(false);
 
         try {
           console.log("Mengambil profile...");
@@ -47,6 +52,8 @@ export function AuthProvider({
         } catch (error) {
           console.error("Gagal mengambil profile:", error);
           setProfile(null);
+        } finally {
+          setLoading(false);
         }
       } else {
         console.log("User logout");
@@ -66,6 +73,7 @@ export function AuthProvider({
         user,
         profile,
         loading,
+        setProfile,
       }}
     >
       {children}

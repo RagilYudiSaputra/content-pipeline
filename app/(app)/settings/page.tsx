@@ -39,7 +39,7 @@ interface UserItem {
 }
 
 export default function SettingsPage() {
-  const { user, profile } = useAuth();
+ const { user, profile, setProfile } = useAuth();
 
   // --- STATE PROFIL DIRI ---
   const [fullName, setFullName] = useState("");
@@ -127,6 +127,14 @@ export default function SettingsPage() {
         },
         { merge: true }
       );
+      setProfile((prev) =>
+  prev
+    ? {
+        ...prev,
+        fullName,
+      }
+    : prev
+);
 
       setProfileMessage({ type: "success", text: "Profil berhasil diperbarui!" });
     } catch (error: any) {
