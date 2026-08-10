@@ -7,8 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard,
   FileText,
-  Calendar, // 1. Added Calendar icon
-  BarChart3,
+  Calendar,
   Settings,
   BookOpen,
   LogOut,
@@ -36,14 +35,9 @@ const menus = [
     icon: FileText,
   },
   {
-    title: "Calendar", // 2. Menu Calendar ditambahkan setelah Content
+    title: "Calendar",
     href: "/calendar",
     icon: Calendar,
-  },
-  {
-    title: "Analytics",
-    href: "/analytics",
-    icon: BarChart3,
   },
   {
     title: "Settings",

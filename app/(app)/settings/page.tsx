@@ -236,19 +236,30 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteUser = async (id: string, name: string) => {
+  const handleDeleteUser = async (id: string, name: string, email: string) => {
     if (confirm(`Apakah Anda yakin ingin menghapus pengguna "${name}"?`)) {
       try {
-        await deleteDoc(doc(db, "users", id));
+        const response = await fetch("/api/users/delete", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: id, email: email }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "Gagal menghapus pengguna");
+        }
+
         setUserManagementMessage({
           type: "success",
-          text: "Pengguna berhasil dihapus dari koleksi users.",
+          text: "Pengguna berhasil dihapus dari Auth dan Firestore.",
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error("Gagal menghapus user:", error);
         setUserManagementMessage({
           type: "error",
-          text: "Gagal menghapus pengguna.",
+          text: error.message || "Gagal menghapus pengguna.",
         });
       }
     }
@@ -474,24 +485,27 @@ export default function SettingsPage() {
                           {u.role || "user"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => handleOpenEditModal(u)}
-                            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition"
-                            title="Edit User"
-                          >
-                            <Edit2 size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteUser(u.id, u.fullName)}
-                            className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition"
-                            title="Hapus User"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
+                     <td className="px-4 py-3 text-right">
+  <div className="flex items-center justify-end gap-1">
+    {/* Tombol Edit */}
+    <button
+      onClick={() => handleOpenEditModal(u)}
+      className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition"
+      title="Edit User"
+    >
+      <Edit2 size={14} />
+    </button>
+
+    {/* Tombol Hapus */}
+    <button
+      onClick={() => handleDeleteUser(u.id, u.fullName, u.email)}
+      className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition"
+      title="Hapus User"
+    >
+      <Trash2 size={14} />
+    </button>
+  </div>
+</td> 
                     </tr>
                   ))
                 )}
