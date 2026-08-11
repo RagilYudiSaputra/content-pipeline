@@ -15,7 +15,6 @@ import {
   ChevronRight,
   Menu,
   X,
-  User,
 } from "lucide-react";
 
 import { signOut } from "firebase/auth";
@@ -106,7 +105,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   return (
     <>
       {/* ------------------------------------------------------------- */}
-      {/* 1. MOBILE TOP HEADER (Navbar Klasik Bulat)                    */}
+      {/* 1. MOBILE TOP HEADER                                          */}
       {/* ------------------------------------------------------------- */}
       <header className="fixed top-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-b border-slate-100 bg-white/80 px-4 backdrop-blur-md md:hidden">
         <div className="flex items-center gap-3">
@@ -119,17 +118,38 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         </div>
 
         <div className="flex items-center gap-2.5">
-          {/* Avatar User Header Mobile */}
-          <button
-            onClick={() => setMobileUserMenuOpen((prev) => !prev)}
-            className="flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-blue-600/20 active:scale-95 transition-transform"
-          >
-            <Avatar className="h-9 w-9">
-              <AvatarFallback className="bg-blue-600 text-xs text-white font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </button>
+          {/* Avatar User Header Mobile + Pop-up Logout */}
+          <div className="relative" ref={mobileUserRef}>
+            <button
+              onClick={() => setMobileUserMenuOpen((prev) => !prev)}
+              className="flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-blue-600/20 active:scale-95 transition-transform"
+            >
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="bg-blue-600 text-xs text-white font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+
+            {/* Pop-up Logout dari Top Header Mobile */}
+            {mobileUserMenuOpen && (
+              <div className="absolute right-0 top-12 z-50 w-52 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+                <div className="px-3 py-2 border-b border-slate-100">
+                  <p className="text-xs font-bold text-slate-800 truncate">
+                    {profile?.fullName ?? "User"}
+                  </p>
+                  <p className="text-[10px] text-slate-500 truncate">{roleLabel}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 mt-1"
+                >
+                  <LogOut size={16} />
+                  Logout / Keluar
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Hamburger Menu Sidebar */}
           <button
@@ -143,10 +163,9 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       </header>
 
       {/* ------------------------------------------------------------- */}
-      {/* 2. MOBILE BOTTOM NAVIGATION BAR                              */}
+      {/* 2. MOBILE BOTTOM NAVIGATION BAR (Khusus 4 Menu Utama)         */}
       {/* ------------------------------------------------------------- */}
       <div className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-t border-slate-200/80 bg-white/80 backdrop-blur-md md:hidden px-3 shadow-lg">
-        {/* Menu Utama */}
         {menus.map((menu) => {
           const Icon = menu.icon;
           const active = pathname === menu.href;
@@ -170,44 +189,6 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             </Link>
           );
         })}
-
-        {/* Tab Icon User / Akun Mobile */}
-        <div className="relative flex-1" ref={mobileUserRef}>
-          <button
-            onClick={() => setMobileUserMenuOpen((prev) => !prev)}
-            className={`flex w-full flex-col items-center justify-center gap-0.5 py-1 text-[10px] font-medium transition-all ${
-              mobileUserMenuOpen ? "text-blue-600 font-bold" : "text-slate-500"
-            }`}
-          >
-            <div
-              className={`flex h-7 w-10 items-center justify-center rounded-full transition-colors ${
-                mobileUserMenuOpen ? "bg-blue-100 text-blue-700" : ""
-              }`}
-            >
-              <User size={18} />
-            </div>
-            <span className="truncate">Akun</span>
-          </button>
-
-          {/* Pop-up Logout dari Bottom Bar Mobile */}
-          {mobileUserMenuOpen && (
-            <div className="absolute bottom-16 right-0 z-50 w-52 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
-              <div className="px-3 py-2 border-b border-slate-100">
-                <p className="text-xs font-bold text-slate-800 truncate">
-                  {profile?.fullName ?? "User"}
-                </p>
-                <p className="text-[10px] text-slate-500 truncate">{roleLabel}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 mt-1"
-              >
-                <LogOut size={16} />
-                Logout / Keluar
-              </button>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* BACKDROP OVERLAY UNTUK MOBILE DRAWER */}
