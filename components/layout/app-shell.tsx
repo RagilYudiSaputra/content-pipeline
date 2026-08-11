@@ -1,32 +1,37 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import Sidebar from "./sidebar";
+import Navbar from "./navbar";
 
-interface AppShellProps {
-  children: ReactNode;
-}
-
-export default function AppShell({ children }: AppShellProps) {
+export default function AppShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50/60 font-sans text-slate-900 antialiased">
-      {/* Oper state collapsed & setCollapsed ke Sidebar */}
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+    <div className="min-h-screen bg-slate-50">
+      {/* Sidebar Component */}
+      <Sidebar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
 
-      {/* Dynamic Padding: md:pl-20 saat ditutup, md:pl-60 saat dibuka */}
-      <div
-        className={`flex flex-col transition-all duration-300 ${
-          collapsed ? "md:pl-20" : "md:pl-60"
+      {/* Navbar Component */}
+      <Navbar
+        collapsed={collapsed}
+        onOpenMobileMenu={() => setMobileOpen(true)}
+      />
+
+      {/* Main Content Area (Perbaikan class padding ada di sini) */}
+      <main
+        className={`pt-20 pb-20 md:pb-6 px-4 md:px-6 transition-all duration-300 ${
+          collapsed ? "md:pl-24" : "md:pl-64"
         }`}
       >
-        <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6 pt-16 md:pt-6">
-          <div className="mx-auto w-full max-w-7xl">
-            {children}
-          </div>
-        </main>
-      </div>
+        {children}
+      </main>
     </div>
   );
 }

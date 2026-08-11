@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Bell, Check, Sparkles, X } from "lucide-react";
+import { Bell, Check, Sparkles, X, Menu, BookOpen } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,12 @@ interface NotificationItem {
   createdAt: string;
 }
 
-export default function Navbar() {
+interface NavbarProps {
+  collapsed: boolean;
+  onOpenMobileMenu: () => void;
+}
+
+export default function Navbar({ collapsed, onOpenMobileMenu }: NavbarProps) {
   const pathname = usePathname();
 
   // State Notifikasi
@@ -66,7 +71,7 @@ export default function Navbar() {
     description: "Manage your content publishing workflow.",
   };
 
-  // Mendengarkan data konten baru dari Firebase secara Realtime
+  // Realtime Firebase Listener
   useEffect(() => {
     const q = query(
       collection(db, "contents"),
@@ -96,7 +101,6 @@ export default function Navbar() {
 
       setNotifications(items);
 
-      // Jika ada perubahan data setelah load pertama, tambahkan counter unread
       if (!isInitialLoad && !snapshot.empty) {
         setUnreadCount((prev) => prev + 1);
       }
@@ -106,7 +110,7 @@ export default function Navbar() {
     return () => unsubscribe();
   }, []);
 
-  // Close dropdown notifikasi jika klik di luar
+  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -125,9 +129,39 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/70 px-6 backdrop-blur-md transition-all">
-      {/* Left Title */}
-      <div>
+    <header
+      className={`fixed top-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/80 px-4 md:px-6 backdrop-blur-md transition-all duration-300 ${
+        collapsed ? "md:pl-24" : "md:pl-64"
+      }`}
+    >
+      {/* ------------------------------------------------------------- */}
+      {/* 1. TAMPILAN MOBILE (Hamburger -> Logo -> Nama Aplikasi)       */}
+      {/* ------------------------------------------------------------- */}
+      <div className="flex items-center gap-3 md:hidden">
+        {/* Hamburger Menu Button */}
+        <button
+          onClick={onOpenMobileMenu}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50/80 text-slate-600 active:bg-slate-100 transition-colors shrink-0"
+          aria-label="Buka Menu"
+        >
+          <Menu size={18} />
+        </button>
+
+        {/* Logo Aplikasi */}
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 shadow-xs shrink-0">
+          <BookOpen className="text-white" size={18} />
+        </div>
+
+        {/* Nama Aplikasi */}
+        <span className="text-sm font-bold tracking-tight text-slate-900 truncate">
+          Wawasan CMS
+        </span>
+      </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 2. TAMPILAN DESKTOP (Title & Description)                     */}
+      {/* ------------------------------------------------------------- */}
+      <div className="hidden md:block">
         <h1 className="text-base font-bold tracking-tight text-slate-800">
           {currentPage.title}
         </h1>
@@ -136,7 +170,9 @@ export default function Navbar() {
         </p>
       </div>
 
-      {/* Right Actions */}
+      {/* ------------------------------------------------------------- */}
+      {/* RIGHT ACTIONS (Bell Notification Dropdown)                    */}
+      {/* ------------------------------------------------------------- */}
       <div className="relative flex items-center gap-2" ref={notifRef}>
         <Button
           variant="ghost"
