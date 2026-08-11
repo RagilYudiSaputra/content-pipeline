@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  User,
 } from "lucide-react";
 
 import { signOut } from "firebase/auth";
@@ -40,16 +41,30 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
+  const [mobileUserMenuOpen, setMobileUserMenuOpen] = useState(false);
+
   const menuRef = useRef<HTMLDivElement>(null);
+  const mobileUserRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMobileOpen(false);
+    setMobileUserMenuOpen(false);
   }, [pathname]);
 
+  // Handle click outside untuk dropdown menu
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
         setOpenMenu(false);
+      }
+      if (
+        mobileUserRef.current &&
+        !mobileUserRef.current.contains(event.target as Node)
+      ) {
+        setMobileUserMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -75,6 +90,7 @@ export default function Sidebar() {
     try {
       setOpenMenu(false);
       setMobileOpen(false);
+      setMobileUserMenuOpen(false);
       await signOut(auth);
       router.replace("/");
       router.refresh();
@@ -85,8 +101,10 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* 1. MOBILE TOP HEADER (Tampil HANYA di HP) */}
-      <header className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
+      {/* ------------------------------------------------------------- */}
+      {/* 1. MOBILE TOP HEADER (Tampil HANYA di HP)                     */}
+      {/* ------------------------------------------------------------- */}
+      <header className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md md:hidden">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-xs">
             <BookOpen className="text-white" size={16} />
@@ -94,17 +112,35 @@ export default function Sidebar() {
           <span className="text-sm font-bold text-slate-900">Wawasan CMS</span>
         </div>
 
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 active:bg-slate-100"
-          aria-label="Buka Menu"
-        >
-          <Menu size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Avatar User Header Mobile */}
+          <button
+            onClick={() => setMobileUserMenuOpen((prev) => !prev)}
+            className="flex h-8 w-8 items-center justify-center rounded-full ring-2 ring-blue-600/20 active:scale-95 transition-transform"
+          >
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-blue-600 text-xs text-white font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </button>
+
+          {/* Hamburger Menu Sidebar */}
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 active:bg-slate-100"
+            aria-label="Buka Menu"
+          >
+            <Menu size={18} />
+          </button>
+        </div>
       </header>
 
-      {/* 2. MOBILE BOTTOM NAVIGATION BAR (Tampil HANYA di HP) */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-slate-200 bg-white/95 backdrop-blur-md md:hidden px-2 shadow-lg">
+      {/* ------------------------------------------------------------- */}
+      {/* 2. MOBILE BOTTOM NAVIGATION BAR (Tampil HANYA di HP)         */}
+      {/* ------------------------------------------------------------- */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-t border-slate-200 bg-white/95 backdrop-blur-md md:hidden px-3 shadow-lg">
+        {/* Menu Utama */}
         {menus.map((menu) => {
           const Icon = menu.icon;
           const active = pathname === menu.href;
@@ -113,12 +149,12 @@ export default function Sidebar() {
             <Link
               key={menu.href}
               href={menu.href}
-              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1 text-[10px] font-medium transition-all ${
+              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-[10px] font-medium transition-all ${
                 active ? "text-blue-600 font-bold" : "text-slate-500 hover:text-slate-900"
               }`}
             >
               <div
-                className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${
+                className={`flex h-7 w-10 items-center justify-center rounded-full transition-colors ${
                   active ? "bg-blue-100 text-blue-700" : ""
                 }`}
               >
@@ -128,6 +164,44 @@ export default function Sidebar() {
             </Link>
           );
         })}
+
+        {/* Tab Icon User / Akun Mobile */}
+        <div className="relative flex-1" ref={mobileUserRef}>
+          <button
+            onClick={() => setMobileUserMenuOpen((prev) => !prev)}
+            className={`flex w-full flex-col items-center justify-center gap-0.5 py-1 text-[10px] font-medium transition-all ${
+              mobileUserMenuOpen ? "text-blue-600 font-bold" : "text-slate-500"
+            }`}
+          >
+            <div
+              className={`flex h-7 w-10 items-center justify-center rounded-full transition-colors ${
+                mobileUserMenuOpen ? "bg-blue-100 text-blue-700" : ""
+              }`}
+            >
+              <User size={18} />
+            </div>
+            <span className="truncate">Akun</span>
+          </button>
+
+          {/* Pop-up Logout dari Bottom Bar Mobile */}
+          {mobileUserMenuOpen && (
+            <div className="absolute bottom-16 right-0 z-50 w-52 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+              <div className="px-3 py-2 border-b border-slate-100">
+                <p className="text-xs font-bold text-slate-800 truncate">
+                  {profile?.fullName ?? "User"}
+                </p>
+                <p className="text-[10px] text-slate-500 truncate">{roleLabel}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 mt-1"
+              >
+                <LogOut size={16} />
+                Logout / Keluar
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* BACKDROP OVERLAY UNTUK MOBILE DRAWER */}
@@ -138,13 +212,13 @@ export default function Sidebar() {
         />
       )}
 
-      {/* 3. DESKTOP SIDEBAR / MOBILE DRAWER (Sembunyi total di mobile kecuali jika drawer dibuka) */}
+      {/* ------------------------------------------------------------- */}
+      {/* 3. DESKTOP SIDEBAR / MOBILE DRAWER                            */}
+      {/* ------------------------------------------------------------- */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-slate-200 bg-white transition-all duration-300 ${
-          // Pengaturan Mobile: melayang saat terbuka, tersembunyi total saat tertutup
           mobileOpen ? "translate-x-0 w-64 md:translate-x-0" : "-translate-x-full md:translate-x-0"
         } ${
-          // Pengaturan Desktop: terpasang di samping (hidden pada mobile layout static)
           collapsed ? "md:w-20" : "md:w-60"
         }`}
       >
@@ -220,7 +294,7 @@ export default function Sidebar() {
 
         <Separator />
 
-        {/* User Profile Footer */}
+        {/* User Profile Footer (Desktop Sidebar) */}
         <div className="relative p-3" ref={menuRef}>
           <div
             onClick={() => setOpenMenu((prev) => !prev)}
@@ -229,7 +303,7 @@ export default function Sidebar() {
             }`}
           >
             <Avatar className="h-8 w-8 shrink-0">
-              <AvatarFallback className="bg-blue-600 text-xs text-white">
+              <AvatarFallback className="bg-blue-600 text-xs text-white font-bold">
                 {initials}
               </AvatarFallback>
             </Avatar>
