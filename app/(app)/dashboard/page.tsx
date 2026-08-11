@@ -282,10 +282,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-full overflow-hidden text-xs pb-4 px-1 sm:px-0">
+    <div className="w-full space-y-4 pb-6 px-3 sm:px-6 min-w-0">
       
       {/* 1. FULL GRADIENT KPI STATS CARDS */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {statCards.map((item, index) => {
           const Icon = item.icon;
           return (
@@ -319,10 +319,10 @@ export default function DashboardPage() {
       </div>
 
       {/* 2. MIDDLE SECTION: RECENT ACTIVITY & PIPELINE STATUS */}
-      <div className="grid gap-3 xl:grid-cols-5">
+      <div className="grid gap-3 lg:grid-cols-5">
         
         {/* RECENT ACTIVITY TIMELINE */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm xl:col-span-3 flex flex-col justify-between">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm lg:col-span-3 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-2.5">
               <div className="flex items-center gap-2">
@@ -385,7 +385,7 @@ export default function DashboardPage() {
         </div>
 
         {/* MODERN PIPELINE STATUS */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm xl:col-span-2 flex flex-col justify-between">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm lg:col-span-2 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
               <div className="flex items-center gap-2">
@@ -486,7 +486,7 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        {/* MOBILE CARD VIEW (Hanya Muncul di Layar HP / Small Screens) */}
+        {/* MOBILE CARD VIEW (Hanya Muncul di Layar HP) */}
         <div className="block md:hidden p-3 space-y-2.5 divide-y divide-slate-100">
           {latestContents.length === 0 ? (
             <div className="py-6 text-center text-slate-400 bg-slate-50/30 rounded-xl">
