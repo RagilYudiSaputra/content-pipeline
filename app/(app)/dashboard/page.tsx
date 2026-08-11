@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Activity,
   ArrowUpRight,
@@ -20,7 +21,6 @@ import {
   Clock3,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 import { collection, getDocs, query, orderBy, limit, Timestamp } from "firebase/firestore";
@@ -34,7 +34,7 @@ interface ContentItem {
   audience: string;
   status: "Published" | "Draft" | "Revisi" | "Approval";
   createdDate: string;
-  rawCreatedDate?: Date;
+  rawCreatedDate: Date;
   fileUrl: string;
 }
 
@@ -50,7 +50,7 @@ interface ActivityLogItem {
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [contents, setContents] = useState<ContentItem[]>([]);
+  const [, setContents] = useState<ContentItem[]>([]);
   const [latestContents, setLatestContents] = useState<ContentItem[]>([]);
   const [activities, setActivities] = useState<ActivityLogItem[]>([]);
 
@@ -63,17 +63,28 @@ export default function DashboardPage() {
     published: 0,
   });
 
+  // Helper konversi Timestamp/Date yang aman
+  const parseTimestamp = (dateValue: unknown): Date => {
+    if (!dateValue) return new Date();
+    if (typeof (dateValue as Timestamp).toDate === "function") {
+      return (dateValue as Timestamp).toDate();
+    }
+    if (dateValue instanceof Date) return dateValue;
+    return new Date(dateValue as string | number);
+  };
+
   useEffect(() => {
     async function fetchDashboardData() {
       try {
         setLoading(true);
-        const contentsRef = collection(db, "contents");
 
-        // 1. Ambil Semua Data untuk Menghitung Stats KPI & Pipeline
+        // 1. Ambil Semua Data Konten (Untuk Stats KPI & 3 Data Terbaru)
+        const contentsRef = collection(db, "contents");
         const snapshot = await getDocs(contentsRef);
+
         const allData: ContentItem[] = snapshot.docs.map((docSnap) => {
           const item = docSnap.data();
-          const dateObj = item.createdDate?.toDate ? item.createdDate.toDate() : new Date();
+          const dateObj = parseTimestamp(item.createdDate);
 
           return {
             id: docSnap.id,
@@ -93,7 +104,7 @@ export default function DashboardPage() {
 
         setContents(allData);
 
-        // Kalkulasi KPI Terpisah
+        // Kalkulasi KPI
         const total = allData.length;
         const draft = allData.filter((i) => i.status === "Draft").length;
         const revisi = allData.filter((i) => i.status === "Revisi").length;
@@ -102,41 +113,20 @@ export default function DashboardPage() {
 
         setStats({ total, draft, revisi, approval, published });
 
-        // 2. Ambil 3 Konten Terbaru untuk Tabel Latest Content
-        const latestQuery = query(contentsRef, orderBy("createdDate", "desc"), limit(3));
-        const latestSnapshot = await getDocs(latestQuery);
+        // Ambil 3 Konten Terbaru dari array memori
+        const sortedContents = [...allData].sort(
+          (a, b) => b.rawCreatedDate.getTime() - a.rawCreatedDate.getTime()
+        );
+        setLatestContents(sortedContents.slice(0, 3));
 
-        const latestData: ContentItem[] = latestSnapshot.docs.map((docSnap) => {
-          const item = docSnap.data();
-          const dateObj = item.createdDate?.toDate ? item.createdDate.toDate() : new Date();
-
-          return {
-            id: docSnap.id,
-            title: item.title ?? "Tanpa Judul",
-            platform: item.platform ?? "Instagram",
-            contentType: item.contentType ?? "Carousel",
-            audience: item.audience ?? "Umum",
-            status: item.status ?? "Draft",
-            createdDate: dateObj.toLocaleDateString("id-ID", {
-              day: "numeric",
-              month: "short",
-            }),
-            rawCreatedDate: dateObj,
-            fileUrl: item.fileUrl ?? "",
-          };
-        });
-
-        setLatestContents(latestData);
-
-        // 3. Ambil 3 Log Aktivitas Real dari Koleksi "activity_logs"
+        // 2. Ambil 3 Log Aktivitas Terbaru
         const logsRef = collection(db, "activity_logs");
         const logsQuery = query(logsRef, orderBy("timestamp", "desc"), limit(3));
         const logsSnapshot = await getDocs(logsQuery);
 
         const fetchedActivities: ActivityLogItem[] = logsSnapshot.docs.map((docSnap) => {
           const data = docSnap.data();
-          const ts: Timestamp = data.timestamp;
-          const dateObj = ts?.toDate ? ts.toDate() : new Date();
+          const dateObj = parseTimestamp(data.timestamp);
 
           const timeString =
             dateObj.toLocaleTimeString("id-ID", {
@@ -158,7 +148,7 @@ export default function DashboardPage() {
 
           return {
             id: docSnap.id,
-            userName: userName,
+            userName,
             action: data.action || "melakukan aktivitas",
             targetTitle: data.targetTitle || "Konten",
             timestamp: dateObj,
@@ -183,26 +173,26 @@ export default function DashboardPage() {
     return Math.round((value / stats.total) * 100);
   };
 
-  // Helper untuk styling platform berwarna
+  // Helper styling warna badge platform
   const getPlatformStyle = (platform: string) => {
     const p = platform.toLowerCase();
     if (p.includes("instagram")) {
       return "bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 text-pink-700 border-pink-200/80";
-    } else if (p.includes("tiktok")) {
+    } if (p.includes("tiktok")) {
       return "bg-slate-900/10 text-slate-900 border-slate-300";
-    } else if (p.includes("youtube")) {
+    } if (p.includes("youtube")) {
       return "bg-rose-500/10 text-rose-700 border-rose-200/80";
-    } else if (p.includes("linkedin")) {
+    } if (p.includes("linkedin")) {
       return "bg-sky-500/10 text-sky-800 border-sky-200/80";
-    } else if (p.includes("twitter") || p.includes("x")) {
+    } if (p.includes("twitter") || p.includes("x")) {
       return "bg-blue-500/10 text-blue-700 border-blue-200/80";
     }
     return "bg-indigo-500/10 text-indigo-700 border-indigo-200/80";
   };
 
-  // Kartu KPI Dipisah Menjadi 5 Kartu Full Gradient
   const statCards = [
     {
+      id: "total",
       title: "Total Content",
       value: stats.total,
       badge: "Realtime",
@@ -216,6 +206,7 @@ export default function DashboardPage() {
       shadowColor: "shadow-blue-500/20",
     },
     {
+      id: "draft",
       title: "Draft",
       value: stats.draft,
       badge: `${getPercentage(stats.draft)}%`,
@@ -229,6 +220,7 @@ export default function DashboardPage() {
       shadowColor: "shadow-orange-500/20",
     },
     {
+      id: "revisi",
       title: "Revisi",
       value: stats.revisi,
       badge: `${getPercentage(stats.revisi)}%`,
@@ -242,6 +234,7 @@ export default function DashboardPage() {
       shadowColor: "shadow-purple-500/20",
     },
     {
+      id: "approval",
       title: "Approval",
       value: stats.approval,
       badge: `${getPercentage(stats.approval)}%`,
@@ -255,6 +248,7 @@ export default function DashboardPage() {
       shadowColor: "shadow-sky-500/20",
     },
     {
+      id: "published",
       title: "Published",
       value: stats.published,
       badge: `${getPercentage(stats.published)}%`,
@@ -283,14 +277,13 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full space-y-4 pb-6 px-3 sm:px-6 min-w-0">
-      
-      {/* 1. FULL GRADIENT KPI STATS CARDS */}
+      {/* 1. KPI STATS CARDS */}
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {statCards.map((item, index) => {
+        {statCards.map((item) => {
           const Icon = item.icon;
           return (
             <div
-              key={index}
+              key={item.id}
               className={`group relative overflow-hidden rounded-2xl border p-3 sm:p-3.5 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg bg-gradient-to-br ${item.gradient} ${item.borderColor} ${item.shadowColor}`}
             >
               <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/10 blur-xl transition-all duration-300 group-hover:scale-150" />
@@ -308,7 +301,7 @@ export default function DashboardPage() {
                 <h2 className={`text-xl sm:text-2xl font-black tracking-tight font-sans ${item.textColor}`}>
                   {item.value}
                 </h2>
-                <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold border shadow-xs ${item.badgeBg}`}>
+                <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold border ${item.badgeBg}`}>
                   <TrendingUp className="mr-0.5 sm:mr-1 h-2 w-2 sm:h-2.5 sm:w-2.5 text-white/90" />
                   {item.badge}
                 </span>
@@ -320,7 +313,6 @@ export default function DashboardPage() {
 
       {/* 2. MIDDLE SECTION: RECENT ACTIVITY & PIPELINE STATUS */}
       <div className="grid gap-3 lg:grid-cols-5">
-        
         {/* RECENT ACTIVITY TIMELINE */}
         <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm lg:col-span-3 flex flex-col justify-between">
           <div>
@@ -334,7 +326,7 @@ export default function DashboardPage() {
                   <p className="text-[9px] text-slate-400">Log riwayat aksi seluruh user sistem</p>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
                 Live Feed
               </span>
@@ -351,7 +343,7 @@ export default function DashboardPage() {
                   const isDesigner =
                     act.userName.toLowerCase().includes("designer") ||
                     act.userName.toLowerCase().includes("desainer");
-                  
+
                   const badgeStyle = isDesigner
                     ? "bg-purple-50 text-purple-700 border-purple-200/80"
                     : "bg-blue-50 text-blue-700 border-blue-200/80";
@@ -362,7 +354,7 @@ export default function DashboardPage() {
                       className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 rounded-xl p-2 transition-all hover:bg-slate-50/80 border border-slate-100/60 sm:border-transparent hover:border-slate-200/60 bg-slate-50/30 sm:bg-transparent"
                     >
                       <div className="flex items-start sm:items-center gap-2 min-w-0">
-                        <div className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1 sm:mt-0 ${act.color} shadow-xs`} />
+                        <div className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1 sm:mt-0 ${act.color}`} />
                         <span className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-md text-[9px] border shrink-0 ${badgeStyle}`}>
                           <Shield className="h-2.5 w-2.5 opacity-70" />
                           {act.userName}
@@ -384,7 +376,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* MODERN PIPELINE STATUS */}
+        {/* STATUS PIPELINE */}
         <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm lg:col-span-2 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
@@ -404,7 +396,7 @@ export default function DashboardPage() {
               <div>
                 <div className="mb-1 flex items-center justify-between text-[10px]">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-amber-500 shadow-xs" /> Draft
+                    <span className="h-2 w-2 rounded-full bg-amber-500" /> Draft
                   </span>
                   <span className="text-slate-600 font-mono font-bold">
                     {stats.draft} <span className="font-normal text-slate-400">({getPercentage(stats.draft)}%)</span>
@@ -417,7 +409,7 @@ export default function DashboardPage() {
               <div>
                 <div className="mb-1 flex items-center justify-between text-[10px]">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-violet-500 shadow-xs" /> Revisi
+                    <span className="h-2 w-2 rounded-full bg-violet-500" /> Revisi
                   </span>
                   <span className="text-slate-600 font-mono font-bold">
                     {stats.revisi} <span className="font-normal text-slate-400">({getPercentage(stats.revisi)}%)</span>
@@ -430,7 +422,7 @@ export default function DashboardPage() {
               <div>
                 <div className="mb-1 flex items-center justify-between text-[10px]">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-sky-500 shadow-xs" /> Approval
+                    <span className="h-2 w-2 rounded-full bg-sky-500" /> Approval
                   </span>
                   <span className="text-slate-600 font-mono font-bold">
                     {stats.approval} <span className="font-normal text-slate-400">({getPercentage(stats.approval)}%)</span>
@@ -443,7 +435,7 @@ export default function DashboardPage() {
               <div>
                 <div className="mb-1 flex items-center justify-between text-[10px]">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-xs" /> Published
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" /> Published
                   </span>
                   <span className="text-slate-600 font-mono font-bold">
                     {stats.published} <span className="font-normal text-slate-400">({getPercentage(stats.published)}%)</span>
@@ -458,12 +450,10 @@ export default function DashboardPage() {
             <span className="text-[9px] font-medium text-slate-400">Cloud Firestore Realtime Sync</span>
           </div>
         </div>
-
       </div>
 
       {/* 3. LATEST CONTENT SECTION */}
       <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
-        
         {/* Header Section */}
         <div className="flex items-center justify-between border-b border-slate-200/70 p-3 sm:px-4 sm:py-3 bg-gradient-to-r from-blue-50/50 via-slate-50/60 to-purple-50/40">
           <div className="flex items-center gap-2">
@@ -475,18 +465,16 @@ export default function DashboardPage() {
               <p className="text-[9px] font-medium text-slate-500 hidden sm:block">Daftar konten yang baru saja dimasukkan ke sistem</p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 px-2.5 text-[10px] font-bold text-blue-700 bg-white/80 hover:bg-blue-600 hover:text-white border-blue-200 shadow-2xs rounded-xl transition-all"
-            onClick={() => (window.location.href = "/content")}
+          <Link
+            href="/content"
+            className="inline-flex items-center justify-center h-7 px-2.5 text-[10px] font-bold text-blue-700 bg-white/80 hover:bg-blue-600 hover:text-white border border-blue-200 rounded-xl transition-all shadow-xs"
           >
             Lihat Semua
             <ArrowUpRight className="ml-1 h-3 w-3" />
-          </Button>
+          </Link>
         </div>
 
-        {/* MOBILE CARD VIEW (Hanya Muncul di Layar HP) */}
+        {/* MOBILE CARD VIEW */}
         <div className="block md:hidden p-3 space-y-2.5 divide-y divide-slate-100">
           {latestContents.length === 0 ? (
             <div className="py-6 text-center text-slate-400 bg-slate-50/30 rounded-xl">
@@ -557,7 +545,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* DESKTOP TABLE VIEW (Muncul di Layar Sedang & Besar) */}
+        {/* DESKTOP TABLE VIEW */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -584,7 +572,6 @@ export default function DashboardPage() {
                     key={item.id}
                     className="hover:bg-gradient-to-r hover:from-blue-50/40 hover:via-indigo-50/20 hover:to-transparent transition-all duration-200 group border-l-2 border-l-transparent hover:border-l-blue-500"
                   >
-                    {/* Judul Konten */}
                     <td className="px-4 py-3 font-bold text-slate-800 group-hover:text-blue-700 transition-colors max-w-[220px]">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
@@ -594,15 +581,13 @@ export default function DashboardPage() {
                       </div>
                     </td>
 
-                    {/* Platform */}
                     <td className="px-3.5 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold text-[9px] border shadow-2xs ${getPlatformStyle(item.platform)}`}>
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold text-[9px] border ${getPlatformStyle(item.platform)}`}>
                         <Share2 className="h-2.5 w-2.5 opacity-70" />
                         {item.platform}
                       </span>
                     </td>
 
-                    {/* Jenis Konten */}
                     <td className="px-3.5 py-3">
                       <span className="inline-flex items-center gap-1.5 text-slate-600 font-semibold bg-slate-100/70 px-2 py-0.5 rounded-md border border-slate-200/50">
                         <Tag className="h-2.5 w-2.5 text-slate-400" />
@@ -610,10 +595,9 @@ export default function DashboardPage() {
                       </span>
                     </td>
 
-                    {/* Status Konten */}
                     <td className="px-3.5 py-3 text-center">
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-bold shadow-2xs transition-transform group-hover:scale-105 ${
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-bold transition-transform group-hover:scale-105 ${
                           item.status === "Published"
                             ? "bg-emerald-50 text-emerald-700 border border-emerald-300/80 shadow-emerald-500/10"
                             : item.status === "Draft"
@@ -638,7 +622,6 @@ export default function DashboardPage() {
                       </span>
                     </td>
 
-                    {/* Tanggal dibuat */}
                     <td className="px-3.5 py-3 whitespace-nowrap">
                       <span className="inline-flex items-center gap-1 text-slate-500 font-medium bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/60 text-[9px]">
                         <Calendar className="h-2.5 w-2.5 text-slate-400" />
@@ -646,14 +629,13 @@ export default function DashboardPage() {
                       </span>
                     </td>
 
-                    {/* Link Akses File */}
                     <td className="px-3.5 py-3 text-right pr-4">
                       {item.fileUrl ? (
                         <a
                           href={item.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-blue-600 bg-blue-50/80 hover:bg-blue-600 hover:text-white rounded-lg border border-blue-200/80 transition-all shadow-2xs group/link"
+                          className="inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-blue-600 bg-blue-50/80 hover:bg-blue-600 hover:text-white rounded-lg border border-blue-200/80 transition-all group/link"
                           title="Buka File"
                         >
                           <span>Buka</span>
@@ -669,14 +651,13 @@ export default function DashboardPage() {
             </tbody>
           </table>
         </div>
-        
-        {/* Footer Kecil Tabel */}
+
+        {/* Footer Tabel */}
         <div className="bg-slate-50/50 border-t border-slate-100 px-3 sm:px-4 py-2 text-[9px] text-slate-400 flex items-center justify-between">
           <span>Menampilkan 3 konten terbaru</span>
           <span className="font-mono text-[8px] text-slate-300">Live Updated</span>
         </div>
       </div>
-
     </div>
   );
 }
