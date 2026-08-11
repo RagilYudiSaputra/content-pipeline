@@ -33,12 +33,16 @@ const menus = [
   { title: "Settings", href: "/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { profile } = useAuth();
 
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
   const [mobileUserMenuOpen, setMobileUserMenuOpen] = useState(false);
@@ -104,7 +108,7 @@ export default function Sidebar() {
       {/* ------------------------------------------------------------- */}
       {/* 1. MOBILE TOP HEADER (Tampil HANYA di HP)                     */}
       {/* ------------------------------------------------------------- */}
-      <header className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md md:hidden">
+      <header className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-xs">
             <BookOpen className="text-white" size={16} />
@@ -139,7 +143,7 @@ export default function Sidebar() {
       {/* ------------------------------------------------------------- */}
       {/* 2. MOBILE BOTTOM NAVIGATION BAR (Tampil HANYA di HP)         */}
       {/* ------------------------------------------------------------- */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-t border-slate-200 bg-white/95 backdrop-blur-md md:hidden px-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-t border-slate-200 bg-white md:hidden px-3 shadow-lg">
         {/* Menu Utama */}
         {menus.map((menu) => {
           const Icon = menu.icon;
