@@ -26,64 +26,34 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/providers/auth-provider";
 
 const menus = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Content",
-    href: "/content",
-    icon: FileText,
-  },
-  {
-    title: "Calendar",
-    href: "/calendar",
-    icon: Calendar,
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
-  },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Content", href: "/content", icon: FileText },
+  { title: "Calendar", href: "/calendar", icon: Calendar },
+  { title: "Settings", href: "/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-
   const { profile } = useAuth();
 
-  // State Desktop Collapse
   const [collapsed, setCollapsed] = useState(false);
-
-  // State Mobile Drawer Open/Close
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // State Dropdown User Menu
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Otomatis tutup mobile drawer saat rute berpindah
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node)
-      ) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenu(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const initials =
@@ -105,9 +75,7 @@ export default function Sidebar() {
     try {
       setOpenMenu(false);
       setMobileOpen(false);
-
       await signOut(auth);
-
       router.replace("/");
       router.refresh();
     } catch (error) {
@@ -117,8 +85,8 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* ==================== 1. MOBILE TOP BAR & BOTTOM NAV (Hanya Muncul di Mobile) ==================== */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur-md md:hidden">
+      {/* 1. MOBILE TOP HEADER (Tampil HANYA di HP) */}
+      <header className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-xs">
             <BookOpen className="text-white" size={16} />
@@ -128,15 +96,15 @@ export default function Sidebar() {
 
         <button
           onClick={() => setMobileOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 active:scale-95"
-          aria-label="Open Menu"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 active:bg-slate-100"
+          aria-label="Buka Menu"
         >
           <Menu size={18} />
         </button>
       </header>
 
-      {/* Bottom Navigation Bar (Akses cepat menu utama di jempol HP) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-slate-200 bg-white/95 backdrop-blur-md md:hidden px-2 shadow-lg">
+      {/* 2. MOBILE BOTTOM NAVIGATION BAR (Tampil HANYA di HP) */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-slate-200 bg-white/95 backdrop-blur-md md:hidden px-2 shadow-lg">
         {menus.map((menu) => {
           const Icon = menu.icon;
           const active = pathname === menu.href;
@@ -162,25 +130,25 @@ export default function Sidebar() {
         })}
       </div>
 
-      {/* Mobile Drawer Backdrop */}
+      {/* BACKDROP OVERLAY UNTUK MOBILE DRAWER */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs transition-opacity md:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-xs md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* ==================== 2. DESKTOP & MOBILE SIDEBAR CONTAINER ==================== */}
+      {/* 3. DESKTOP SIDEBAR / MOBILE DRAWER (Sembunyi total di mobile kecuali jika drawer dibuka) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-slate-200 bg-white transition-all duration-300 md:static md:z-auto ${
-          // Tampilan Mobile (Slide-in)
-          mobileOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0"
+        className={`fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-slate-200 bg-white transition-all duration-300 ${
+          // Pengaturan Mobile: melayang saat terbuka, tersembunyi total saat tertutup
+          mobileOpen ? "translate-x-0 w-64 md:translate-x-0" : "-translate-x-full md:translate-x-0"
         } ${
-          // Tampilan Desktop (Collapsed Width)
+          // Pengaturan Desktop: terpasang di samping (hidden pada mobile layout static)
           collapsed ? "md:w-20" : "md:w-60"
         }`}
       >
-        {/* Tombol Toggle Collapse (Hanya Muncul di Desktop) */}
+        {/* Toggle Collapse Button (Hanya Desktop) */}
         <button
           onClick={() => setCollapsed((prev) => !prev)}
           className="hidden md:flex absolute -right-3 top-6 z-40 h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white shadow-xs text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
@@ -201,14 +169,11 @@ export default function Sidebar() {
                 <h1 className="text-base font-bold tracking-tight text-slate-900 truncate">
                   Wawasan CMS
                 </h1>
-                <p className="text-xs text-slate-500 truncate">
-                  Content Pipeline
-                </p>
+                <p className="text-xs text-slate-500 truncate">Content Pipeline</p>
               </div>
             )}
           </div>
 
-          {/* Tombol Tutup Drawer khusus Mobile */}
           <button
             onClick={() => setMobileOpen(false)}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 md:hidden"
@@ -219,7 +184,7 @@ export default function Sidebar() {
 
         <Separator />
 
-        {/* Main Menu Navigasi */}
+        {/* Navigation Menu */}
         <div className="flex-1 px-3 py-4 overflow-y-auto">
           {(!collapsed || mobileOpen) && (
             <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
@@ -237,7 +202,7 @@ export default function Sidebar() {
                   key={menu.href}
                   href={menu.href}
                   title={collapsed && !mobileOpen ? menu.title : undefined}
-                  className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition-all duration-150 ${
+                  className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition-all ${
                     collapsed && !mobileOpen ? "justify-center" : ""
                   } ${
                     active
@@ -262,7 +227,6 @@ export default function Sidebar() {
             className={`flex cursor-pointer items-center gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 p-2 transition hover:bg-slate-100 ${
               collapsed && !mobileOpen ? "justify-center" : ""
             }`}
-            title={collapsed && !mobileOpen ? profile?.fullName || "Profile" : undefined}
           >
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarFallback className="bg-blue-600 text-xs text-white">
@@ -275,17 +239,14 @@ export default function Sidebar() {
                 <h3 className="text-xs font-semibold text-slate-800 truncate">
                   {profile?.fullName ?? "Loading..."}
                 </h3>
-                <p className="text-[10px] text-slate-500 truncate">
-                  {roleLabel}
-                </p>
+                <p className="text-[10px] text-slate-500 truncate">{roleLabel}</p>
               </div>
             )}
           </div>
 
-          {/* Modal Dropdown Logout */}
           {openMenu && (
             <div
-              className={`absolute bottom-16 z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg transition-all ${
+              className={`absolute bottom-16 z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg ${
                 collapsed && !mobileOpen ? "left-2 w-48" : "left-3 right-3"
               }`}
             >
