@@ -6,22 +6,19 @@ interface AppShellProps {
   children: ReactNode;
 }
 
-export default function AppShell({
-  children,
-}: AppShellProps) {
+export default function AppShell({ children }: AppShellProps) {
   return (
-    // ✅ Kunci tinggi layar pas 100vh dan matikan scroll global
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50">
-      {/* Sidebar: Otomatis terkunci diam di posisi kiri */}
+    <div className="min-h-screen bg-slate-50/60 font-sans text-slate-900 antialiased">
+      {/* Sidebar Desktop & Navigation Mobile */}
       <Sidebar />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Navbar: Tetap diam di atas konten */}
+      {/* Main Content Area (md:pl-64 mencegah konten desktop tertutup sidebar) */}
+      <div className="flex flex-col md:pl-64">
+        {/* Navbar Atas (Berisi Judul + Icon Profil/Logout Mobile & Desktop) */}
         <Navbar />
 
-        {/* Main: HANYA area ini yang bisa di-scroll ke bawah */}
-        <main className="flex-1 overflow-y-auto px-8 pt-2 pb-8">
+        {/* Main Content (pb-20 di mobile agar tidak tertutup bottom navbar) */}
+        <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6">
           <div className="mx-auto w-full max-w-7xl">
             {children}
           </div>
