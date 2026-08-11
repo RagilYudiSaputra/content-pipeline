@@ -106,23 +106,25 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   return (
     <>
       {/* ------------------------------------------------------------- */}
-      {/* 1. MOBILE TOP HEADER (Tampil HANYA di HP)                     */}
+      {/* 1. MOBILE TOP HEADER (Navbar Klasik Bulat)                    */}
       {/* ------------------------------------------------------------- */}
-      <header className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-xs">
-            <BookOpen className="text-white" size={16} />
+      <header className="fixed top-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-b border-slate-100 bg-white/80 px-4 backdrop-blur-md md:hidden">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 shadow-xs">
+            <BookOpen className="text-white" size={18} />
           </div>
-          <span className="text-sm font-bold text-slate-900">Wawasan CMS</span>
+          <span className="text-sm font-bold tracking-tight text-slate-900">
+            Wawasan CMS
+          </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {/* Avatar User Header Mobile */}
           <button
             onClick={() => setMobileUserMenuOpen((prev) => !prev)}
-            className="flex h-8 w-8 items-center justify-center rounded-full ring-2 ring-blue-600/20 active:scale-95 transition-transform"
+            className="flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-blue-600/20 active:scale-95 transition-transform"
           >
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-blue-600 text-xs text-white font-bold">
                 {initials}
               </AvatarFallback>
@@ -132,7 +134,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           {/* Hamburger Menu Sidebar */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 active:bg-slate-100"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50/80 text-slate-600 active:bg-slate-100 transition-colors"
             aria-label="Buka Menu"
           >
             <Menu size={18} />
@@ -141,9 +143,9 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       </header>
 
       {/* ------------------------------------------------------------- */}
-      {/* 2. MOBILE BOTTOM NAVIGATION BAR (Tampil HANYA di HP)         */}
+      {/* 2. MOBILE BOTTOM NAVIGATION BAR                              */}
       {/* ------------------------------------------------------------- */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-t border-slate-200 bg-white md:hidden px-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-t border-slate-200/80 bg-white/80 backdrop-blur-md md:hidden px-3 shadow-lg">
         {/* Menu Utama */}
         {menus.map((menu) => {
           const Icon = menu.icon;
