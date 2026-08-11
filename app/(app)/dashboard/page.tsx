@@ -282,35 +282,34 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-3.5 max-w-full overflow-hidden text-xs pb-2">
+    <div className="space-y-4 max-w-full overflow-hidden text-xs pb-4 px-1 sm:px-0">
       
-      {/* 1. FULL GRADIENT KPI STATS CARDS (5 KOLOM) */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      {/* 1. FULL GRADIENT KPI STATS CARDS */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-3 xl:grid-cols-5">
         {statCards.map((item, index) => {
           const Icon = item.icon;
           return (
             <div
               key={index}
-              className={`group relative overflow-hidden rounded-2xl border p-3.5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-gradient-to-br ${item.gradient} ${item.borderColor} ${item.shadowColor}`}
+              className={`group relative overflow-hidden rounded-2xl border p-3 sm:p-3.5 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg bg-gradient-to-br ${item.gradient} ${item.borderColor} ${item.shadowColor}`}
             >
-              {/* Overlay Glow Effect pada Hover */}
               <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/10 blur-xl transition-all duration-300 group-hover:scale-150" />
 
-              <div className="relative z-10 flex items-center justify-between">
-                <span className={`text-[10px] font-bold tracking-wider uppercase ${item.titleColor}`}>
+              <div className="relative z-10 flex items-center justify-between gap-1">
+                <span className={`text-[9px] sm:text-[10px] font-bold tracking-wider uppercase truncate ${item.titleColor}`}>
                   {item.title}
                 </span>
-                <div className={`rounded-xl p-1.5 border backdrop-blur-md shadow-sm transition-transform group-hover:scale-110 ${item.iconBg}`}>
-                  <Icon className="h-3.5 w-3.5" />
+                <div className={`rounded-xl p-1 sm:p-1.5 border backdrop-blur-md shadow-sm shrink-0 transition-transform group-hover:scale-110 ${item.iconBg}`}>
+                  <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 </div>
               </div>
 
-              <div className="relative z-10 mt-2.5 flex items-baseline justify-between">
-                <h2 className={`text-2xl font-black tracking-tight font-sans ${item.textColor}`}>
+              <div className="relative z-10 mt-2 flex items-baseline justify-between gap-1">
+                <h2 className={`text-xl sm:text-2xl font-black tracking-tight font-sans ${item.textColor}`}>
                   {item.value}
                 </h2>
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border shadow-xs ${item.badgeBg}`}>
-                  <TrendingUp className="mr-1 h-2.5 w-2.5 text-white/90" />
+                <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold border shadow-xs ${item.badgeBg}`}>
+                  <TrendingUp className="mr-0.5 sm:mr-1 h-2 w-2 sm:h-2.5 sm:w-2.5 text-white/90" />
                   {item.badge}
                 </span>
               </div>
@@ -331,11 +330,11 @@ export default function DashboardPage() {
                   <Activity className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <h2 className="text-[12px] font-bold text-slate-900">Aktivitas Terbaru</h2>
+                  <h2 className="text-xs font-bold text-slate-900">Aktivitas Terbaru</h2>
                   <p className="text-[9px] text-slate-400">Log riwayat aksi seluruh user sistem</p>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
                 Live Feed
               </span>
@@ -360,11 +359,11 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={act.id}
-                      className="group relative flex items-center justify-between gap-2 rounded-xl p-2 transition-all hover:bg-slate-50/80 border border-transparent hover:border-slate-200/60"
+                      className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 rounded-xl p-2 transition-all hover:bg-slate-50/80 border border-slate-100/60 sm:border-transparent hover:border-slate-200/60 bg-slate-50/30 sm:bg-transparent"
                     >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${act.color} shadow-xs`} />
-                        <span className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-md text-[9px] border shrink-0 ${badgeStyle}`}>
+                      <div className="flex items-start sm:items-center gap-2 min-w-0">
+                        <div className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1 sm:mt-0 ${act.color} shadow-xs`} />
+                        <span className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-md text-[9px] border shrink-0 ${badgeStyle}`}>
                           <Shield className="h-2.5 w-2.5 opacity-70" />
                           {act.userName}
                         </span>
@@ -374,7 +373,7 @@ export default function DashboardPage() {
                         </span>
                       </div>
 
-                      <span className="text-[9px] font-medium text-slate-400 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 shrink-0">
+                      <span className="self-end sm:self-auto text-[8px] sm:text-[9px] font-medium text-slate-400 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 shrink-0">
                         {act.formattedTime}
                       </span>
                     </div>
@@ -394,7 +393,7 @@ export default function DashboardPage() {
                   <Layers className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <h2 className="text-[12px] font-bold text-slate-900">Status Pipeline</h2>
+                  <h2 className="text-xs font-bold text-slate-900">Status Pipeline</h2>
                   <p className="text-[9px] text-slate-400">Distribusi tahap konten</p>
                 </div>
               </div>
@@ -462,24 +461,24 @@ export default function DashboardPage() {
 
       </div>
 
-      {/* 3. LATEST CONTENT TABLE */}
+      {/* 3. LATEST CONTENT SECTION */}
       <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
         
-        {/* Header Section Tabel */}
-        <div className="flex items-center justify-between border-b border-slate-200/70 px-4 py-3 bg-gradient-to-r from-blue-50/50 via-slate-50/60 to-purple-50/40">
-          <div className="flex items-center gap-2.5">
+        {/* Header Section */}
+        <div className="flex items-center justify-between border-b border-slate-200/70 p-3 sm:px-4 sm:py-3 bg-gradient-to-r from-blue-50/50 via-slate-50/60 to-purple-50/40">
+          <div className="flex items-center gap-2">
             <div className="rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 p-1.5 text-white shadow-xs">
-              <FileText className="h-4 w-4" />
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
             <div>
-              <h2 className="text-[12px] font-bold text-slate-900">Konten Terbaru</h2>
-              <p className="text-[9px] font-medium text-slate-500">Daftar konten yang baru saja dimasukkan ke sistem</p>
+              <h2 className="text-xs font-bold text-slate-900">Konten Terbaru</h2>
+              <p className="text-[9px] font-medium text-slate-500 hidden sm:block">Daftar konten yang baru saja dimasukkan ke sistem</p>
             </div>
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="h-7 px-3 text-[10px] font-bold text-blue-700 bg-white/80 hover:bg-blue-600 hover:text-white border-blue-200 shadow-2xs rounded-xl transition-all"
+            className="h-7 px-2.5 text-[10px] font-bold text-blue-700 bg-white/80 hover:bg-blue-600 hover:text-white border-blue-200 shadow-2xs rounded-xl transition-all"
             onClick={() => (window.location.href = "/content")}
           >
             Lihat Semua
@@ -487,8 +486,79 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        {/* Body Tabel */}
-        <div className="overflow-x-auto">
+        {/* MOBILE CARD VIEW (Hanya Muncul di Layar HP / Small Screens) */}
+        <div className="block md:hidden p-3 space-y-2.5 divide-y divide-slate-100">
+          {latestContents.length === 0 ? (
+            <div className="py-6 text-center text-slate-400 bg-slate-50/30 rounded-xl">
+              <Sparkles className="mx-auto h-5 w-5 text-slate-300 mb-1" />
+              Belum ada data konten terbaru.
+            </div>
+          ) : (
+            latestContents.map((item) => (
+              <div key={item.id} className="pt-2.5 first:pt-0 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-bold text-slate-800 text-xs line-clamp-2">{item.title}</h3>
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8px] font-bold shrink-0 ${
+                      item.status === "Published"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-300/80"
+                        : item.status === "Draft"
+                        ? "bg-amber-50 text-amber-700 border border-amber-300/80"
+                        : item.status === "Approval"
+                        ? "bg-sky-50 text-sky-700 border border-sky-300/80"
+                        : "bg-violet-50 text-violet-700 border border-violet-300/80"
+                    }`}
+                  >
+                    <span
+                      className={`h-1 w-1 rounded-full animate-pulse ${
+                        item.status === "Published"
+                          ? "bg-emerald-500"
+                          : item.status === "Draft"
+                          ? "bg-amber-500"
+                          : item.status === "Approval"
+                          ? "bg-sky-500"
+                          : "bg-violet-500"
+                      }`}
+                    />
+                    {item.status}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[9px]">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold border ${getPlatformStyle(item.platform)}`}>
+                      <Share2 className="h-2 w-2 opacity-70" />
+                      {item.platform}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-slate-600 font-semibold bg-slate-100/70 px-1.5 py-0.5 rounded-md border border-slate-200/50">
+                      <Tag className="h-2 w-2 text-slate-400" />
+                      {item.contentType}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-slate-500 font-medium bg-slate-50 px-1.5 py-0.5 rounded-md border border-slate-200/60">
+                      <Calendar className="h-2 w-2 text-slate-400" />
+                      {item.createdDate}
+                    </span>
+                  </div>
+
+                  {item.fileUrl && (
+                    <a
+                      href={item.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg border border-blue-200 transition-all ml-auto"
+                    >
+                      <span>Buka</span>
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* DESKTOP TABLE VIEW (Muncul di Layar Sedang & Besar) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200/80 text-[9px] font-extrabold text-slate-500 uppercase tracking-wider bg-gradient-to-r from-slate-100/80 via-slate-50 to-indigo-50/40">
@@ -601,7 +671,7 @@ export default function DashboardPage() {
         </div>
         
         {/* Footer Kecil Tabel */}
-        <div className="bg-slate-50/50 border-t border-slate-100 px-4 py-2 text-[9px] text-slate-400 flex items-center justify-between">
+        <div className="bg-slate-50/50 border-t border-slate-100 px-3 sm:px-4 py-2 text-[9px] text-slate-400 flex items-center justify-between">
           <span>Menampilkan 3 konten terbaru</span>
           <span className="font-mono text-[8px] text-slate-300">Live Updated</span>
         </div>
