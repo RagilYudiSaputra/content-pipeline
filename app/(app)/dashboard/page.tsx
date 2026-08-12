@@ -293,7 +293,7 @@ export default function DashboardPage() {
                   {item.title}
                 </span>
                 <div className={`rounded-xl p-1 sm:p-1.5 border backdrop-blur-md shadow-sm shrink-0 transition-transform group-hover:scale-110 ${item.iconBg}`}>
-                  <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <Icon className="h-3.5 w-3.5 sm:h-3.5 sm:w-3.5" />
                 </div>
               </div>
 
@@ -314,7 +314,7 @@ export default function DashboardPage() {
       {/* 2. MIDDLE SECTION: RECENT ACTIVITY & PIPELINE STATUS */}
       <div className="grid gap-3 lg:grid-cols-5">
         {/* RECENT ACTIVITY TIMELINE */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm lg:col-span-3 flex flex-col justify-between">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-sm lg:col-span-3 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-2.5">
               <div className="flex items-center gap-2">
@@ -322,8 +322,8 @@ export default function DashboardPage() {
                   <Activity className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <h2 className="text-xs font-bold text-slate-900">Aktivitas Terbaru</h2>
-                  <p className="text-[9px] text-slate-400">Log riwayat aksi seluruh user sistem</p>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900">Aktivitas Terbaru</h2>
+                  <p className="text-[9px] sm:text-[10px] text-slate-400">Log riwayat aksi seluruh user sistem</p>
                 </div>
               </div>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
@@ -351,21 +351,23 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={act.id}
-                      className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 rounded-xl p-2 transition-all hover:bg-slate-50/80 border border-slate-100/60 sm:border-transparent hover:border-slate-200/60 bg-slate-50/30 sm:bg-transparent"
+                      className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 rounded-xl p-2.5 sm:p-2 transition-all hover:bg-slate-50/80 border border-slate-200/60 sm:border-transparent hover:border-slate-200/60 bg-slate-50/40 sm:bg-transparent"
                     >
                       <div className="flex items-start sm:items-center gap-2 min-w-0">
-                        <div className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1 sm:mt-0 ${act.color}`} />
-                        <span className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-md text-[9px] border shrink-0 ${badgeStyle}`}>
-                          <Shield className="h-2.5 w-2.5 opacity-70" />
-                          {act.userName}
-                        </span>
-                        <span className="text-[10px] text-slate-600 truncate">
-                          {act.action}{" "}
-                          <strong className="text-slate-900 font-semibold">&quot;{act.targetTitle}&quot;</strong>
-                        </span>
+                        <div className={`h-2.5 w-2.5 rounded-full shrink-0 mt-0.5 sm:mt-0 ${act.color}`} />
+                        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                          <span className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-md text-[9px] border shrink-0 ${badgeStyle}`}>
+                            <Shield className="h-2.5 w-2.5 opacity-70" />
+                            {act.userName}
+                          </span>
+                          <span className="text-[10px] sm:text-[11px] text-slate-600 leading-tight">
+                            {act.action}{" "}
+                            <strong className="text-slate-900 font-semibold">&quot;{act.targetTitle}&quot;</strong>
+                          </span>
+                        </div>
                       </div>
 
-                      <span className="self-end sm:self-auto text-[8px] sm:text-[9px] font-medium text-slate-400 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 shrink-0">
+                      <span className="self-end sm:self-auto text-[8px] sm:text-[9px] font-medium text-slate-400 bg-white sm:bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 shrink-0">
                         {act.formattedTime}
                       </span>
                     </div>
@@ -377,7 +379,7 @@ export default function DashboardPage() {
         </div>
 
         {/* STATUS PIPELINE */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm lg:col-span-2 flex flex-col justify-between">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-sm lg:col-span-2 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
               <div className="flex items-center gap-2">
@@ -385,8 +387,8 @@ export default function DashboardPage() {
                   <Layers className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <h2 className="text-xs font-bold text-slate-900">Status Pipeline</h2>
-                  <p className="text-[9px] text-slate-400">Distribusi tahap konten</p>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900">Status Pipeline</h2>
+                  <p className="text-[9px] sm:text-[10px] text-slate-400">Distribusi tahap konten</p>
                 </div>
               </div>
             </div>
@@ -394,7 +396,7 @@ export default function DashboardPage() {
             <div className="space-y-2.5">
               {/* Draft */}
               <div>
-                <div className="mb-1 flex items-center justify-between text-[10px]">
+                <div className="mb-1 flex items-center justify-between text-[10px] sm:text-[11px]">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-amber-500" /> Draft
                   </span>
@@ -407,7 +409,7 @@ export default function DashboardPage() {
 
               {/* Revisi */}
               <div>
-                <div className="mb-1 flex items-center justify-between text-[10px]">
+                <div className="mb-1 flex items-center justify-between text-[10px] sm:text-[11px]">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-violet-500" /> Revisi
                   </span>
@@ -420,7 +422,7 @@ export default function DashboardPage() {
 
               {/* Approval */}
               <div>
-                <div className="mb-1 flex items-center justify-between text-[10px]">
+                <div className="mb-1 flex items-center justify-between text-[10px] sm:text-[11px]">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-sky-500" /> Approval
                   </span>
@@ -433,7 +435,7 @@ export default function DashboardPage() {
 
               {/* Published */}
               <div>
-                <div className="mb-1 flex items-center justify-between text-[10px]">
+                <div className="mb-1 flex items-center justify-between text-[10px] sm:text-[11px]">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" /> Published
                   </span>
@@ -461,44 +463,50 @@ export default function DashboardPage() {
               <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
             <div>
-              <h2 className="text-xs font-bold text-slate-900">Konten Terbaru</h2>
-              <p className="text-[9px] font-medium text-slate-500 hidden sm:block">Daftar konten yang baru saja dimasukkan ke sistem</p>
+              <h2 className="text-xs sm:text-sm font-bold text-slate-900">Konten Terbaru</h2>
+              <p className="text-[9px] sm:text-[10px] font-medium text-slate-500 hidden sm:block">Daftar konten yang baru saja dimasukkan ke sistem</p>
             </div>
           </div>
           <Link
             href="/content"
-            className="inline-flex items-center justify-center h-7 px-2.5 text-[10px] font-bold text-blue-700 bg-white/80 hover:bg-blue-600 hover:text-white border border-blue-200 rounded-xl transition-all shadow-xs"
+            className="inline-flex items-center justify-center h-7 px-3 text-[10px] font-bold text-blue-700 bg-white hover:bg-blue-600 hover:text-white border border-blue-200/80 rounded-xl transition-all shadow-xs"
           >
             Lihat Semua
             <ArrowUpRight className="ml-1 h-3 w-3" />
           </Link>
         </div>
 
-        {/* MOBILE CARD VIEW */}
-        <div className="block md:hidden p-3 space-y-2.5 divide-y divide-slate-100">
+        {/* MOBILE CARD VIEW (Optimized UX) */}
+        <div className="block md:hidden p-3 space-y-3">
           {latestContents.length === 0 ? (
-            <div className="py-6 text-center text-slate-400 bg-slate-50/30 rounded-xl">
+            <div className="py-6 text-center text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
               <Sparkles className="mx-auto h-5 w-5 text-slate-300 mb-1" />
               Belum ada data konten terbaru.
             </div>
           ) : (
             latestContents.map((item) => (
-              <div key={item.id} className="pt-2.5 first:pt-0 space-y-2">
+              <div
+                key={item.id}
+                className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3 space-y-2.5 shadow-xs transition-all active:scale-[0.99]"
+              >
+                {/* Header Kartu: Judul & Status */}
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-bold text-slate-800 text-xs line-clamp-2">{item.title}</h3>
+                  <h3 className="font-bold text-slate-800 text-xs sm:text-sm leading-snug line-clamp-2">
+                    {item.title}
+                  </h3>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8px] font-bold shrink-0 ${
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold shrink-0 ${
                       item.status === "Published"
-                        ? "bg-emerald-50 text-emerald-700 border border-emerald-300/80"
+                        ? "bg-emerald-100/80 text-emerald-800 border border-emerald-300/80"
                         : item.status === "Draft"
-                        ? "bg-amber-50 text-amber-700 border border-amber-300/80"
+                        ? "bg-amber-100/80 text-amber-800 border border-amber-300/80"
                         : item.status === "Approval"
-                        ? "bg-sky-50 text-sky-700 border border-sky-300/80"
-                        : "bg-violet-50 text-violet-700 border border-violet-300/80"
+                        ? "bg-sky-100/80 text-sky-800 border border-sky-300/80"
+                        : "bg-violet-100/80 text-violet-800 border border-violet-300/80"
                     }`}
                   >
                     <span
-                      className={`h-1 w-1 rounded-full animate-pulse ${
+                      className={`h-1.5 w-1.5 rounded-full animate-pulse ${
                         item.status === "Published"
                           ? "bg-emerald-500"
                           : item.status === "Draft"
@@ -512,34 +520,36 @@ export default function DashboardPage() {
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[9px]">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold border ${getPlatformStyle(item.platform)}`}>
-                      <Share2 className="h-2 w-2 opacity-70" />
-                      {item.platform}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-slate-600 font-semibold bg-slate-100/70 px-1.5 py-0.5 rounded-md border border-slate-200/50">
-                      <Tag className="h-2 w-2 text-slate-400" />
-                      {item.contentType}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-slate-500 font-medium bg-slate-50 px-1.5 py-0.5 rounded-md border border-slate-200/60">
-                      <Calendar className="h-2 w-2 text-slate-400" />
-                      {item.createdDate}
-                    </span>
-                  </div>
+                {/* Metadata Pills */}
+                <div className="flex flex-wrap items-center gap-1.5 text-[9px]">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold border ${getPlatformStyle(item.platform)}`}>
+                    <Share2 className="h-2.5 w-2.5 opacity-70" />
+                    {item.platform}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-slate-600 font-semibold bg-white px-2 py-0.5 rounded-md border border-slate-200/70">
+                    <Tag className="h-2.5 w-2.5 text-slate-400" />
+                    {item.contentType}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-slate-500 font-medium bg-white px-2 py-0.5 rounded-md border border-slate-200/70 ml-auto">
+                    <Calendar className="h-2.5 w-2.5 text-slate-400" />
+                    {item.createdDate}
+                  </span>
+                </div>
 
-                  {item.fileUrl && (
+                {/* Tombol Aksi File jika ada */}
+                {item.fileUrl && (
+                  <div className="pt-1 border-t border-slate-200/50 flex justify-end">
                     <a
                       href={item.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg border border-blue-200 transition-all ml-auto"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg border border-blue-200/80 transition-all shadow-xs active:bg-blue-700"
                     >
-                      <span>Buka</span>
-                      <ExternalLink className="h-2.5 w-2.5" />
+                      <span>Buka File Dokumen</span>
+                      <ExternalLink className="h-3 w-3" />
                     </a>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             ))
           )}

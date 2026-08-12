@@ -156,20 +156,20 @@ export default function CalendarPage() {
   const getPlatformStyle = (platform: string) => {
     const p = String(platform).toLowerCase();
     if (p.includes("instagram")) {
-      return "bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-rose-500/10 border-pink-200/80 hover:border-pink-300 text-pink-900";
+      return "bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-rose-500/10 border-pink-200/80 text-pink-900";
     }
     if (p.includes("tiktok")) {
-      return "bg-slate-900/5 border-slate-300/80 hover:border-slate-400 text-slate-900";
+      return "bg-slate-900/5 border-slate-300/80 text-slate-900";
     }
-    return "bg-blue-500/10 border-blue-200/80 hover:border-blue-300 text-blue-900";
+    return "bg-blue-500/10 border-blue-200/80 text-blue-900";
   };
 
   const getStatusDot = (status: string) => {
     const s = String(status).toLowerCase();
-    if (s === "published") return "bg-emerald-500 ring-2 ring-emerald-200";
-    if (s === "approval") return "bg-sky-500 ring-2 ring-sky-200";
-    if (s === "revisi") return "bg-violet-500 ring-2 ring-violet-200";
-    return "bg-amber-500 ring-2 ring-amber-200";
+    if (s === "published") return "bg-emerald-500 ring-1 ring-emerald-200";
+    if (s === "approval") return "bg-sky-500 ring-1 ring-sky-200";
+    if (s === "revisi") return "bg-violet-500 ring-1 ring-violet-200";
+    return "bg-amber-500 ring-1 ring-amber-200";
   };
 
   const getStatusBadge = (status: string) => {
@@ -202,53 +202,53 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-full text-xs font-sans pb-6">
+    <div className="space-y-3 max-w-full text-xs font-sans pb-4">
       {/* HEADER & CONTROL BAR */}
-      <div className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur-md p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-slate-900 p-2.5 text-white shadow-md shadow-slate-900/10">
-              <CalendarIcon className="h-4 w-4" />
+      <div className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur-md p-3 md:p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 w-full md:w-auto justify-between md:justify-start">
+          <div className="flex items-center gap-2.5">
+            <div className="rounded-xl bg-slate-900 p-2 text-white shadow-md shadow-slate-900/10">
+              <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </div>
             <div>
-              <h1 className="text-base font-extrabold text-slate-900 tracking-tight capitalize">{monthName}</h1>
-              <p className="text-[11px] font-medium text-slate-500">Jadwal Perencanaan Konten Media Sosial</p>
+              <h1 className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight capitalize">{monthName}</h1>
+              <p className="text-[10px] md:text-[11px] font-medium text-slate-500">Jadwal Perencanaan Konten</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
+          <div className="flex items-center gap-0.5 bg-slate-100/80 p-0.5 md:p-1 rounded-xl border border-slate-200/60">
             <button
               onClick={prevMonth}
-              className="p-1.5 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition-all shadow-2xs"
+              className="p-1 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition-all"
               title="Bulan Sebelumnya"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </button>
             <button
               onClick={goToToday}
-              className="px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-white rounded-lg transition-all"
+              className="px-1.5 md:px-2 py-0.5 md:py-1 text-[9px] md:text-[10px] font-bold text-slate-700 hover:bg-white rounded-lg transition-all"
             >
               Hari Ini
             </button>
             <button
               onClick={nextMonth}
-              className="p-1.5 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition-all shadow-2xs"
+              className="p-1 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition-all"
               title="Bulan Berikutnya"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </button>
           </div>
         </div>
 
         {/* PLATFORM FILTER */}
-        <div className="flex items-center gap-1.5 w-full md:w-auto justify-start md:justify-end overflow-x-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-1 w-full md:w-auto justify-start md:justify-end overflow-x-auto pb-0.5 md:pb-0">
           {["Semua", "Instagram", "TikTok"].map((plat) => (
             <button
               key={plat}
               onClick={() => setSelectedPlatform(plat)}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all shrink-0 ${
+              className={`px-2.5 py-1 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-bold transition-all shrink-0 ${
                 selectedPlatform === plat
-                  ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
+                  ? "bg-blue-600 text-white shadow-xs shadow-blue-500/30"
                   : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/60"
               }`}
             >
@@ -259,28 +259,28 @@ export default function CalendarPage() {
       </div>
 
       {/* LEGEND STATUS */}
-      <div className="rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-2.5 shadow-xs flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-600 font-medium">
-        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px] flex items-center gap-1">
-          <Sparkles className="h-3 w-3 text-slate-400" /> Status Konten:
+      <div className="rounded-xl border border-slate-200/70 bg-white/60 px-3 py-1.5 md:py-2 shadow-2xs flex flex-wrap items-center justify-between gap-1.5 text-[9px] md:text-[10px] text-slate-600 font-medium">
+        <span className="text-slate-400 font-bold uppercase tracking-wider text-[8px] md:text-[9px] flex items-center gap-1">
+          <Sparkles className="h-2.5 w-2.5 md:h-3 md:w-3 text-slate-400" /> Status:
         </span>
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" /> Draft</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-violet-500" /> Revisi</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-sky-500" /> Approval</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Published</span>
+        <div className="flex flex-wrap items-center gap-2.5 md:gap-4">
+          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-amber-500" /> Draft</span>
+          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-violet-500" /> Revisi</span>
+          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-sky-500" /> Approval</span>
+          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-emerald-500" /> Published</span>
         </div>
       </div>
 
       {/* GRID KALENDER */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden relative">
+      <div className="rounded-xl md:rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden relative">
         {loading && (
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-xs z-20 flex items-center justify-center gap-2 text-slate-600 font-medium">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-600" /> Memuat Data...
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-xs z-20 flex items-center justify-center gap-2 text-slate-600 font-medium text-xs">
+            <Loader2 className="h-4 w-4 animate-spin text-blue-600" /> Memuat Data...
           </div>
         )}
 
         {/* Nama Hari */}
-        <div className="grid grid-cols-7 border-b border-slate-200/80 bg-slate-50/80 text-center font-extrabold text-[10px] text-slate-500 uppercase tracking-wider py-2.5">
+        <div className="grid grid-cols-7 border-b border-slate-200/80 bg-slate-50/80 text-center font-extrabold text-[9px] md:text-[10px] text-slate-500 uppercase tracking-wider py-1.5 md:py-2.5">
           <div className="text-rose-500">Min</div>
           <div>Sen</div>
           <div>Sel</div>
@@ -294,7 +294,7 @@ export default function CalendarPage() {
         <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-100 bg-slate-100/30">
           {calendarDays.map((day, idx) => {
             if (day === null) {
-              return <div key={`empty-${idx}`} className="min-h-[115px] bg-slate-50/40" />;
+              return <div key={`empty-${idx}`} className="min-h-[52px] md:min-h-[115px] bg-slate-50/40" />;
             }
 
             const dayEvents = contents.filter((item) => {
@@ -313,44 +313,45 @@ export default function CalendarPage() {
             return (
               <div
                 key={`day-${day}`}
-                className={`min-h-[115px] p-1.5 transition-all duration-150 flex flex-col justify-between group hover:bg-slate-50/80 ${
+                className={`min-h-[52px] md:min-h-[115px] p-0.5 md:p-1.5 transition-all duration-150 flex flex-col justify-between group hover:bg-slate-50/80 ${
                   isToday ? "bg-blue-50/40" : "bg-white"
                 }`}
               >
-                <div className="flex items-center justify-between mb-1.5">
+                {/* Header Slot Tanggal */}
+                <div className="flex items-center justify-between mb-0.5 md:mb-1.5">
                   <span
-                    className={`h-6 w-6 flex items-center justify-center rounded-full text-[11px] font-bold ${
+                    className={`h-4 w-4 md:h-6 md:w-6 flex items-center justify-center rounded-full text-[9px] md:text-[11px] font-bold ${
                       isToday
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                        ? "bg-blue-600 text-white shadow-xs"
                         : "text-slate-700 group-hover:text-blue-600"
                     }`}
                   >
                     {day}
                   </span>
                   {dayEvents.length > 0 && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60">
+                    <span className="text-[7px] md:text-[9px] font-bold px-1 py-0.2 md:px-1.5 md:py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60">
                       {dayEvents.length}
                     </span>
                   )}
                 </div>
 
                 {/* List Item Konten */}
-                <div className="space-y-1.5 flex-1 overflow-y-auto max-h-[90px] pr-0.5 scrollbar-thin">
+                <div className="space-y-0.5 md:space-y-1.5 flex-1 overflow-y-auto max-h-[38px] md:max-h-[90px] pr-0.5 scrollbar-thin">
                   {dayEvents.map((event) => (
                     <div
                       key={event.id}
                       onClick={() => setSelectedContent(event)}
-                      className={`p-1.5 rounded-xl border transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-2xs ${getPlatformStyle(
+                      className={`p-0.5 md:p-1.5 rounded-md md:rounded-xl border transition-all cursor-pointer shadow-2xs ${getPlatformStyle(
                         event.platform
                       )}`}
                     >
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="truncate font-semibold text-[10px] text-slate-900 leading-tight">
+                      <div className="flex items-center justify-between gap-0.5 md:gap-1">
+                        <span className="truncate font-semibold text-[8px] md:text-[10px] text-slate-900 leading-none md:leading-tight">
                           {event.title}
                         </span>
-                        <span className={`h-2 w-2 rounded-full shrink-0 ${getStatusDot(event.status)}`} />
+                        <span className={`h-1.5 w-1.5 md:h-2 md:w-2 rounded-full shrink-0 ${getStatusDot(event.status)}`} />
                       </div>
-                      <div className="flex items-center justify-between text-[8px] text-slate-500 font-medium">
+                      <div className="hidden md:flex items-center justify-between text-[8px] text-slate-500 font-medium">
                         <span className="capitalize">{event.platform}</span>
                         <span>{event.scheduledTime}</span>
                       </div>
@@ -365,50 +366,50 @@ export default function CalendarPage() {
 
       {/* POPUP DETAIL KONTEN */}
       {selectedContent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150 relative overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-3 md:p-4">
+          <div className="w-full max-w-lg rounded-2xl md:rounded-3xl bg-white p-4 md:p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150 relative overflow-hidden">
             
             {/* Header Popup */}
-            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 md:pb-4 mb-3 md:mb-4">
               <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${getStatusBadge(selectedContent.status)}`}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className={`px-2 py-0.5 rounded-md text-[9px] md:text-[10px] font-bold border ${getStatusBadge(selectedContent.status)}`}>
                     {selectedContent.status}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg">
-                    <Tag className="h-3 w-3 text-slate-400" /> {selectedContent.platform}
+                  <span className="text-[9px] md:text-[10px] font-bold text-slate-500 flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-md">
+                    <Tag className="h-2.5 w-2.5 md:h-3 md:w-3 text-slate-400" /> {selectedContent.platform}
                   </span>
                 </div>
-                <h2 className="text-base font-bold text-slate-900 leading-snug">{selectedContent.title}</h2>
+                <h2 className="text-sm md:text-base font-bold text-slate-900 leading-snug">{selectedContent.title}</h2>
               </div>
               <button
                 onClick={() => setSelectedContent(null)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all shrink-0"
+                className="p-1 md:p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all shrink-0"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="space-y-4 text-slate-700">
+            <div className="space-y-3 md:space-y-4 text-slate-700">
               {/* Meta Info */}
-              <div className="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[11px]">
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Clock className="h-3.5 w-3.5 text-slate-400" />
+              <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 md:p-3 rounded-xl md:rounded-2xl border border-slate-100 text-[10px] md:text-[11px]">
+                <div className="flex items-center gap-1.5 text-slate-600">
+                  <Clock className="h-3 w-3 text-slate-400" />
                   <span>{formatDisplayDate(selectedContent.scheduledDate)} • {selectedContent.scheduledTime} WIB</span>
                 </div>
-                <div className="flex items-center gap-2 text-slate-600 justify-end">
-                  <User className="h-3.5 w-3.5 text-slate-400" />
+                <div className="flex items-center gap-1.5 text-slate-600 justify-end">
+                  <User className="h-3 w-3 text-slate-400" />
                   <span>{selectedContent.authorName}</span>
                 </div>
               </div>
 
               {/* Caption */}
               <div>
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
+                <span className="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">
                   Caption
                 </span>
-                <div className="rounded-2xl bg-slate-50 p-3 border border-slate-200/60 max-h-40 overflow-y-auto">
-                  <p className="text-[11px] text-slate-700 whitespace-pre-wrap leading-relaxed font-mono">
+                <div className="rounded-xl md:rounded-2xl bg-slate-50 p-2.5 md:p-3 border border-slate-200/60 max-h-32 md:max-h-40 overflow-y-auto">
+                  <p className="text-[10px] md:text-[11px] text-slate-700 whitespace-pre-wrap leading-relaxed font-mono">
                     {selectedContent.caption || "Tidak ada caption."}
                   </p>
                 </div>
@@ -416,47 +417,47 @@ export default function CalendarPage() {
 
               {/* Hashtag */}
               <div>
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
+                <span className="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">
                   Hashtags
                 </span>
                 {selectedContent.hashtags && selectedContent.hashtags.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                  <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
                     {selectedContent.hashtags.map((tag, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-600 bg-blue-50/80 border border-blue-100 px-2 py-0.5 rounded-lg"
+                        className="inline-flex items-center gap-0.5 text-[9px] md:text-[10px] font-semibold text-blue-600 bg-blue-50/80 border border-blue-100 px-1.5 py-0.5 rounded-md"
                       >
-                        <Hash className="h-2.5 w-2.5 text-blue-400" />
+                        <Hash className="h-2 w-2 text-blue-400" />
                         {tag.replace(/^#/, "")}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[10px] text-slate-400 italic">Tidak ada hashtag.</p>
+                  <p className="text-[9px] md:text-[10px] text-slate-400 italic">Tidak ada hashtag.</p>
                 )}
               </div>
             </div>
 
             {/* Footer Action */}
-            <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
               {selectedContent.driveLink ? (
                 <a
                   href={selectedContent.driveLink}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                  className="inline-flex items-center gap-1 text-[10px] md:text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" /> Buka Asset Drive
+                  <ExternalLink className="h-3 w-3" /> Buka Asset Drive
                 </a>
               ) : (
-                <span className="text-[10px] text-slate-400 italic">Tidak ada link asset</span>
+                <span className="text-[9px] md:text-[10px] text-slate-400 italic">Tidak ada link asset</span>
               )}
 
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedContent(null)}
-                className="h-8 px-4 text-xs font-semibold rounded-xl border-slate-200 hover:bg-slate-50"
+                className="h-7 md:h-8 px-3 md:px-4 text-[11px] md:text-xs font-semibold rounded-lg md:rounded-xl border-slate-200 hover:bg-slate-50"
               >
                 Tutup
               </Button>

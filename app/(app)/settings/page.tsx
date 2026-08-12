@@ -20,7 +20,6 @@ import {
   updateDoc,
   collection,
   onSnapshot,
-  deleteDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -39,7 +38,7 @@ interface UserItem {
 }
 
 export default function SettingsPage() {
- const { user, profile, setProfile } = useAuth();
+  const { user, profile, setProfile } = useAuth();
 
   // --- STATE PROFIL DIRI ---
   const [fullName, setFullName] = useState("");
@@ -76,14 +75,12 @@ export default function SettingsPage() {
 
   const isAdmin = profile?.role === "admin";
 
-  // Load nama profil pengguna yang login
   useEffect(() => {
     if (profile) {
       setFullName(profile.fullName || "");
     }
   }, [profile]);
 
-  // Fetch daftar pengguna secara realtime menggunakan koleksi "users"
   useEffect(() => {
     if (!isAdmin) return;
 
@@ -108,7 +105,6 @@ export default function SettingsPage() {
     return () => unsubscribe();
   }, [isAdmin]);
 
-  // Handle Simpan Profil Diri ke koleksi "users"
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -128,13 +124,13 @@ export default function SettingsPage() {
         { merge: true }
       );
       setProfile((prev) =>
-  prev
-    ? {
-        ...prev,
-        fullName,
-      }
-    : prev
-);
+        prev
+          ? {
+              ...prev,
+              fullName,
+            }
+          : prev
+      );
 
       setProfileMessage({ type: "success", text: "Profil berhasil diperbarui!" });
     } catch (error: any) {
@@ -147,8 +143,6 @@ export default function SettingsPage() {
       setSavingProfile(false);
     }
   };
-
-  // --- LOGIC MANAJEMEN USER (ADMIN) ---
 
   const filteredUsers = useMemo(() => {
     return usersList.filter((u) => {
@@ -180,7 +174,6 @@ export default function SettingsPage() {
     setIsModalOpen(true);
   };
 
-  // Submit Form User (Tambah / Edit)
   const handleSubmitUserForm = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmittingUser(true);
@@ -188,7 +181,6 @@ export default function SettingsPage() {
 
     try {
       if (editingUser) {
-        // Mode Edit: Update dokumen di koleksi "users"
         const targetRef = doc(db, "users", editingUser.id);
         await updateDoc(targetRef, {
           fullName: formData.fullName,
@@ -200,7 +192,6 @@ export default function SettingsPage() {
           text: "Data pengguna berhasil diperbarui!",
         });
       } else {
-        // Mode Tambah: Panggil API Backend
         const response = await fetch("/api/users/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -275,26 +266,26 @@ export default function SettingsPage() {
       .toUpperCase() || "U";
 
   return (
-    <div className="flex h-full w-full flex-col justify-start p-4 md:p-6 overflow-y-auto space-y-6">
+    <div className="flex h-full w-full flex-col justify-start p-3 sm:p-4 md:p-6 overflow-y-auto space-y-4 sm:space-y-6">
       {/* 1. CARD PROFIL PENGGUNA */}
-      <div className="w-full max-w-4xl rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="w-full max-w-4xl rounded-xl sm:rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-5 shadow-xs">
+        <div className="mb-3 sm:mb-4 flex items-center justify-between gap-2">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="text-sm sm:text-base font-semibold text-slate-900">
               Profil Pengguna
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-[11px] sm:text-xs text-slate-500">
               Perbarui informasi profil Anda di bawah ini.
             </p>
           </div>
-          <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-medium text-blue-700 border border-blue-100 capitalize">
+          <span className="rounded-full bg-blue-50 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-medium text-blue-700 border border-blue-100 capitalize shrink-0">
             Role: {profile?.role || "user"}
           </span>
         </div>
 
         {profileMessage && (
           <div
-            className={`mb-4 rounded-xl p-3 text-xs font-medium ${
+            className={`mb-3 rounded-lg sm:rounded-xl p-2.5 text-[11px] sm:text-xs font-medium ${
               profileMessage.type === "success"
                 ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                 : "bg-red-50 text-red-700 border border-red-200"
@@ -304,38 +295,38 @@ export default function SettingsPage() {
           </div>
         )}
 
-        <form onSubmit={handleSaveProfile} className="space-y-4">
-          <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
-            <Avatar className="h-14 w-14 shrink-0 border border-slate-200 shadow-sm">
-              <AvatarFallback className="bg-blue-600 text-base font-bold text-white">
+        <form onSubmit={handleSaveProfile} className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-2.5 sm:p-3.5">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 border border-slate-200 shadow-xs">
+              <AvatarFallback className="bg-blue-600 text-xs sm:text-sm font-bold text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
 
             <div>
-              <p className="text-xs font-semibold text-slate-800">
+              <p className="text-[11px] sm:text-xs font-semibold text-slate-800">
                 Avatar Inisial
               </p>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[10px] sm:text-[11px] text-slate-500 leading-tight">
                 Avatar Anda secara otomatis menggunakan inisial nama lengkap Anda.
               </p>
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-700">
+            <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
               Email Akun
             </label>
             <input
               type="text"
               value={user?.email || ""}
               disabled
-              className="w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs text-slate-400"
+              className="w-full cursor-not-allowed rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-400"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-700">
+            <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
               Nama Lengkap
             </label>
             <input
@@ -343,25 +334,25 @@ export default function SettingsPage() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Masukkan nama lengkap Anda"
-              className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs text-slate-800 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+              className="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
               required
             />
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-1">
             <button
               type="submit"
               disabled={savingProfile}
-              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+              className="flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg sm:rounded-xl bg-blue-600 px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
               {savingProfile ? (
                 <>
-                  <Loader2 size={15} className="animate-spin" />
+                  <Loader2 size={13} className="animate-spin" />
                   <span>Menyimpan...</span>
                 </>
               ) : (
                 <>
-                  <Save size={15} />
+                  <Save size={13} />
                   <span>Simpan Perubahan</span>
                 </>
               )}
@@ -372,32 +363,32 @@ export default function SettingsPage() {
 
       {/* 2. KHUSUS ADMIN: MODUL MANAJEMEN USER */}
       {isAdmin && (
-        <div className="w-full max-w-4xl rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="w-full max-w-4xl rounded-xl sm:rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-5 shadow-xs">
+          <div className="mb-3 sm:mb-4 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <Users size={18} className="text-blue-600" />
-                <h2 className="text-base font-semibold text-slate-900">
+              <div className="flex items-center gap-1.5">
+                <Users size={16} className="text-blue-600" />
+                <h2 className="text-sm sm:text-base font-semibold text-slate-900">
                   Manajemen Pengguna
                 </h2>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-[11px] sm:text-xs text-slate-500">
                 Kelola daftar akun, pendaftaran, dan hak akses pengguna sistem.
               </p>
             </div>
 
             <button
               onClick={handleOpenAddModal}
-              className="flex items-center gap-2 self-start rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-blue-700 cursor-pointer sm:self-auto"
+              className="flex items-center justify-center gap-1.5 rounded-lg sm:rounded-xl bg-blue-600 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[11px] sm:text-xs font-medium text-white shadow-xs transition hover:bg-blue-700 cursor-pointer w-full sm:w-auto"
             >
-              <Plus size={15} />
+              <Plus size={13} />
               <span>Tambah User Baru</span>
             </button>
           </div>
 
           {userManagementMessage && (
             <div
-              className={`mb-4 rounded-xl p-3 text-xs font-medium ${
+              className={`mb-3 rounded-lg sm:rounded-xl p-2.5 text-[11px] sm:text-xs font-medium ${
                 userManagementMessage.type === "success"
                   ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                   : "bg-red-50 text-red-700 border border-red-200"
@@ -407,21 +398,21 @@ export default function SettingsPage() {
             </div>
           )}
 
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center justify-between">
+          <div className="mb-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-between">
             <div className="relative flex-1">
               <Search
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={13}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
                 type="text"
-                placeholder="Cari berdasarkan nama atau email..."
+                placeholder="Cari nama/email..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-9 pr-3 py-2 text-xs text-slate-800 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                className="w-full rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50/50 pl-8 pr-2.5 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
               />
             </div>
 
@@ -431,7 +422,7 @@ export default function SettingsPage() {
                 setRoleFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-700 focus:border-blue-600 focus:outline-none"
+              className="rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50/50 px-2.5 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-700 focus:border-blue-600 focus:outline-none"
             >
               <option value="all">Semua Role</option>
               <option value="admin">Admin</option>
@@ -440,40 +431,42 @@ export default function SettingsPage() {
             </select>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <table className="w-full text-left text-xs text-slate-700">
-              <thead className="bg-slate-50/80 text-[11px] uppercase text-slate-500 border-b border-slate-200">
+          <div className="overflow-x-auto rounded-lg sm:rounded-xl border border-slate-200">
+            <table className="w-full text-left text-[11px] sm:text-xs text-slate-700">
+              <thead className="bg-slate-50/80 text-[10px] sm:text-[11px] uppercase text-slate-500 border-b border-slate-200">
                 <tr>
-                  <th className="px-4 py-3">Nama</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Role</th>
-                  <th className="px-4 py-3 text-right">Aksi</th>
+                  <th className="px-2.5 py-2 sm:px-4 sm:py-3">Nama</th>
+                  <th className="px-2.5 py-2 sm:px-4 sm:py-3">Email</th>
+                  <th className="px-2.5 py-2 sm:px-4 sm:py-3">Role</th>
+                  <th className="px-2.5 py-2 sm:px-4 sm:py-3 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {loadingUsers ? (
                   <tr>
-                    <td colSpan={4} className="py-8 text-center text-slate-400">
-                      <Loader2 size={18} className="mx-auto animate-spin mb-1" />
+                    <td colSpan={4} className="py-6 text-center text-slate-400">
+                      <Loader2 size={16} className="mx-auto animate-spin mb-1" />
                       <span>Memuat data pengguna...</span>
                     </td>
                   </tr>
                 ) : paginatedUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-8 text-center text-slate-400">
+                    <td colSpan={4} className="py-6 text-center text-slate-400">
                       Tidak ada data pengguna ditemukan.
                     </td>
                   </tr>
                 ) : (
                   paginatedUsers.map((u) => (
                     <tr key={u.id} className="hover:bg-slate-50/50 transition">
-                      <td className="px-4 py-3 font-medium text-slate-900">
+                      <td className="px-2.5 py-2 sm:px-4 sm:py-2.5 font-medium text-slate-900 whitespace-nowrap">
                         {u.fullName || "-"}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">{u.email}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-2.5 py-2 sm:px-4 sm:py-2.5 text-slate-600 max-w-[120px] sm:max-w-none truncate sm:whitespace-normal">
+                        {u.email}
+                      </td>
+                      <td className="px-2.5 py-2 sm:px-4 sm:py-2.5 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold capitalize ${
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold capitalize ${
                             u.role === "admin"
                               ? "bg-purple-50 text-purple-700 border border-purple-200"
                               : u.role === "designer"
@@ -481,31 +474,29 @@ export default function SettingsPage() {
                               : "bg-slate-100 text-slate-600"
                           }`}
                         >
-                          {u.role === "admin" && <ShieldCheck size={12} />}
+                          {u.role === "admin" && <ShieldCheck size={10} />}
                           {u.role || "user"}
                         </span>
                       </td>
-                     <td className="px-4 py-3 text-right">
-  <div className="flex items-center justify-end gap-1">
-    {/* Tombol Edit */}
-    <button
-      onClick={() => handleOpenEditModal(u)}
-      className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition"
-      title="Edit User"
-    >
-      <Edit2 size={14} />
-    </button>
+                      <td className="px-2.5 py-2 sm:px-4 sm:py-2.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-0.5">
+                          <button
+                            onClick={() => handleOpenEditModal(u)}
+                            className="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition"
+                            title="Edit User"
+                          >
+                            <Edit2 size={13} />
+                          </button>
 
-    {/* Tombol Hapus */}
-    <button
-      onClick={() => handleDeleteUser(u.id, u.fullName, u.email)}
-      className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition"
-      title="Hapus User"
-    >
-      <Trash2 size={14} />
-    </button>
-  </div>
-</td> 
+                          <button
+                            onClick={() => handleDeleteUser(u.id, u.fullName, u.email)}
+                            className="rounded-md p-1 text-slate-500 hover:bg-red-50 hover:text-red-600 transition"
+                            title="Hapus User"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -514,7 +505,7 @@ export default function SettingsPage() {
           </div>
 
           {!loadingUsers && filteredUsers.length > 0 && (
-            <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+            <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-xs text-slate-500">
               <div>
                 Menampilkan{" "}
                 <span className="font-medium text-slate-800">
@@ -535,11 +526,11 @@ export default function SettingsPage() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  className="rounded-lg border border-slate-200 p-1.5 hover:bg-slate-50 disabled:opacity-40"
+                  className="rounded-md border border-slate-200 p-1 hover:bg-slate-50 disabled:opacity-40"
                 >
-                  <ChevronLeft size={14} />
+                  <ChevronLeft size={13} />
                 </button>
-                <span className="px-2 font-medium text-slate-700">
+                <span className="px-1.5 font-medium text-slate-700">
                   {currentPage} / {totalPages}
                 </span>
                 <button
@@ -547,9 +538,9 @@ export default function SettingsPage() {
                   onClick={() =>
                     setCurrentPage((p) => Math.min(p + 1, totalPages))
                   }
-                  className="rounded-lg border border-slate-200 p-1.5 hover:bg-slate-50 disabled:opacity-40"
+                  className="rounded-md border border-slate-200 p-1 hover:bg-slate-50 disabled:opacity-40"
                 >
-                  <ChevronRight size={14} />
+                  <ChevronRight size={13} />
                 </button>
               </div>
             </div>
@@ -559,23 +550,23 @@ export default function SettingsPage() {
 
       {/* 3. MODAL / POPUP (TAMBAH / EDIT USER) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-5 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm sm:max-w-md rounded-xl sm:rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm sm:text-base font-semibold text-slate-900">
                 {editingUser ? "Edit Pengguna" : "Tambah Pengguna Baru"}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitUserForm} className="space-y-4">
+            <form onSubmit={handleSubmitUserForm} className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
                   Nama Lengkap
                 </label>
                 <input
@@ -586,12 +577,12 @@ export default function SettingsPage() {
                     setFormData({ ...formData, fullName: e.target.value })
                   }
                   placeholder="Contoh: Alex Rivers"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
+                  className="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
                   Email Akun
                 </label>
                 <input
@@ -603,13 +594,13 @@ export default function SettingsPage() {
                     setFormData({ ...formData, email: e.target.value })
                   }
                   placeholder="name@company.com"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs text-slate-800 focus:border-blue-600 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
+                  className="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
                 />
               </div>
 
               {!editingUser && (
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                  <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
                     Password Awal
                   </label>
                   <input
@@ -621,13 +612,13 @@ export default function SettingsPage() {
                       setFormData({ ...formData, password: e.target.value })
                     }
                     placeholder="Minimal 6 karakter"
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
+                    className="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
                   />
                 </div>
               )}
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
                   Hak Akses / Role
                 </label>
                 <select
@@ -635,7 +626,7 @@ export default function SettingsPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value as any })
                   }
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
+                  className="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
                 >
                   <option value="designer">Designer</option>
                   <option value="admin">Admin</option>
@@ -643,22 +634,22 @@ export default function SettingsPage() {
                 </select>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                  className="rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 text-[11px] sm:text-xs font-medium text-slate-600 hover:bg-slate-50"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={submittingUser}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-lg sm:rounded-xl bg-blue-600 px-3.5 py-1.5 text-[11px] sm:text-xs font-medium text-white shadow-xs hover:bg-blue-700 disabled:opacity-50"
                 >
                   {submittingUser ? (
                     <>
-                      <Loader2 size={14} className="animate-spin" />
+                      <Loader2 size={13} className="animate-spin" />
                       <span>Menyimpan...</span>
                     </>
                   ) : (
