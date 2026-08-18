@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
+  KeyRound,
+  Lock,
 } from "lucide-react";
 import {
   doc,
@@ -22,6 +24,7 @@ import {
   onSnapshot,
   serverTimestamp,
 } from "firebase/firestore";
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -47,6 +50,12 @@ export default function SettingsPage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  // --- STATE EDIT PASSWORD SENDIRI ---
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
   // --- STATE MANAJEMEN USER (ADMIN ONLY) ---
   const [usersList, setUsersList] = useState<UserItem[]>([]);
@@ -105,6 +114,7 @@ export default function SettingsPage() {
     return () => unsubscribe();
   }, [isAdmin]);
 
+  // --- HANDLER SIMPAN PROFIL & UBAH PASSWORD SENDIRI ---
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -113,6 +123,25 @@ export default function SettingsPage() {
     setProfileMessage(null);
 
     try {
+      // 1. Update Password jika diisi
+      if (showPasswordFields && newPassword) {
+        if (newPassword !== confirmNewPassword) {
+          throw new Error("Konfirmasi kata sandi baru tidak cocok.");
+        }
+        if (newPassword.length < 6) {
+          throw new Error("Kata sandi baru minimal 6 karakter.");
+        }
+        if (!currentPassword) {
+          throw new Error("Masukkan kata sandi saat ini untuk melakukan verifikasi.");
+        }
+
+        // Re-otentikasi pengguna sebelum ganti password
+        const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
+      }
+
+      // 2. Update Firestore Profil
       const userDocRef = doc(db, "users", user.uid);
       await setDoc(
         userDocRef,
@@ -123,6 +152,7 @@ export default function SettingsPage() {
         },
         { merge: true }
       );
+
       setProfile((prev) =>
         prev
           ? {
@@ -132,7 +162,13 @@ export default function SettingsPage() {
           : prev
       );
 
-      setProfileMessage({ type: "success", text: "Profil berhasil diperbarui!" });
+      // Reset form password
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setShowPasswordFields(false);
+
+      setProfileMessage({ type: "success", text: "Profil dan password berhasil diperbarui!" });
     } catch (error: any) {
       console.error("Gagal menyimpan profil:", error);
       setProfileMessage({
@@ -174,6 +210,7 @@ export default function SettingsPage() {
     setIsModalOpen(true);
   };
 
+  // --- HANDLER SUBMIT USER OLEH ADMIN ---
   const handleSubmitUserForm = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmittingUser(true);
@@ -181,12 +218,30 @@ export default function SettingsPage() {
 
     try {
       if (editingUser) {
+        // Update data profil Firestore
         const targetRef = doc(db, "users", editingUser.id);
         await updateDoc(targetRef, {
           fullName: formData.fullName,
           role: formData.role,
           updatedAt: serverTimestamp(),
         });
+
+        // Jika Admin menginputkan password baru untuk user tersebut
+        if (formData.password) {
+          const res = await fetch("/api/users/update-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: editingUser.id,
+              newPassword: formData.password,
+            }),
+          });
+          if (!res.ok) {
+            const errRes = await res.json();
+            throw new Error(errRes.message || "Gagal memperbarui password pengguna");
+          }
+        }
+
         setUserManagementMessage({
           type: "success",
           text: "Data pengguna berhasil diperbarui!",
@@ -275,7 +330,7 @@ export default function SettingsPage() {
               Profil Pengguna
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-500">
-              Perbarui informasi profil Anda di bawah ini.
+              Perbarui informasi profil dan kata sandi Anda di bawah ini.
             </p>
           </div>
           <span className="rounded-full bg-blue-50 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-medium text-blue-700 border border-blue-100 capitalize shrink-0">
@@ -337,6 +392,61 @@ export default function SettingsPage() {
               className="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
               required
             />
+          </div>
+
+          {/* TOGGLE EDIT PASSWORD SENDIRI */}
+          <div className="pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowPasswordFields(!showPasswordFields)}
+              className="flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-blue-600 hover:text-blue-700 transition cursor-pointer"
+            >
+              <KeyRound size={13} />
+              <span>{showPasswordFields ? "Batal Ubah Password" : "Ubah Kata Sandi / Password"}</span>
+            </button>
+
+            {showPasswordFields && (
+              <div className="mt-3 space-y-3 rounded-xl border border-slate-200 bg-slate-50/40 p-3">
+                <div>
+                  <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
+                    Kata Sandi Saat Ini
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Masukkan kata sandi lama"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
+                    Kata Sandi Baru
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Minimal 6 karakter"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
+                    Konfirmasi Kata Sandi Baru
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Ulangi kata sandi baru"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end pt-1">
@@ -548,7 +658,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* 3. MODAL / POPUP (TAMBAH / EDIT USER) */}
+      {/* 3. MODAL / POPUP (TAMBAH / EDIT USER BY ADMIN) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-3 sm:p-4 backdrop-blur-xs">
           <div className="w-full max-w-sm sm:max-w-md rounded-xl sm:rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-xl">
@@ -598,24 +708,27 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {!editingUser && (
-                <div>
-                  <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
-                    Password Awal
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    placeholder="Minimal 6 karakter"
-                    className="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
-                  />
-                </div>
-              )}
+              {/* FIELD PASSWORD MODAL (Bisa diisi saat Tambah Baru maupun Reset Password Edit User) */}
+              <div>
+                <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
+                  {editingUser ? "Reset Password Baru (Opsional)" : "Password Awal"}
+                </label>
+                <input
+                  type="password"
+                  required={!editingUser}
+                  minLength={6}
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  placeholder={
+                    editingUser
+                      ? "Kosongkan jika tidak ingin mengubah password"
+                      : "Minimal 6 karakter"
+                  }
+                  className="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs text-slate-800 focus:border-blue-600 focus:outline-none"
+                />
+              </div>
 
               <div>
                 <label className="mb-1 block text-[11px] sm:text-xs font-medium text-slate-700">
